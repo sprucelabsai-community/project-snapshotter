@@ -23,8 +23,9 @@ Controlled environment (Spruce CLI) means we can make assumptions about project 
 A snapshot is:
 
 1. **Sync source files** to a mirror directory using rsync
-   - If source has `.gitignore`: use `git ls-files --cached --others --exclude-standard` to get file list and pipe to rsync
-   - If no `.gitignore`: rsync with sensible defaults (exclude `node_modules`, `build`)
+   - If source has `.gitignore`: use `git ls-files` to respect it, plus security exclusions
+   - If no `.gitignore`: use security exclusions only
+   - See [Security / Privacy](#security--privacy) for exclusion list
 
 2. **Git commit** in the mirror directory's own isolated repo
    - Captures the diff from previous state
