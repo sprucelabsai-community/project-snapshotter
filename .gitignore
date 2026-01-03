@@ -32,6 +32,7 @@ node_modules/
 .env
 .env.*
 .env-*
+!.env.example
 
 # macOS files
 .DS_Store
@@ -39,10 +40,16 @@ node_modules/
 # Rejected "git apply" patch files
 *.rej
 
-/build/
+build/
 esm/
 
 tmp/
+
+# Package-specific env files (allow .env.example in packages)
+packages/**/.env
+packages/**/.env.*
+packages/**/.env-*
+!packages/**/.env.example
 
 yarn.lock
 package-lock.json
