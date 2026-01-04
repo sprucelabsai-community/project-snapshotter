@@ -43,6 +43,43 @@ export default class RegisteringProjectsTest extends AbstractSpruceTest {
     }
 
     @test()
+    protected async checkNameIsAvailableToStart() {
+        const name = generateId()
+        const isAvailable = await this.checkNameAvailability(name)
+        assert.isTrue(isAvailable)
+    }
+
+    @test()
+    protected async checkNameIsNotAvailableAfterRegistration() {
+        const name = generateId()
+        await this.registerProject(name)
+        const isAvailable = await this.checkNameAvailability(name)
+        assert.isFalse(isAvailable)
+    }
+
+    @test()
+    protected async nameAvailabilityIsSharedAcrossApiInstances() {
+        const name = generateId()
+        await this.registerProject(name)
+
+        const secondApi = new RegressionProofApi({
+            giteaUrl: process.env.GITEA_URL!,
+            giteaAdminUser: process.env.GITEA_ADMIN_USER!,
+            giteaAdminPassword: process.env.GITEA_ADMIN_PASSWORD!,
+        })
+        await secondApi.start()
+
+        const secondClient = new RegressionProofClient(
+            `http://localhost:${secondApi.getPort()}`
+        )
+
+        const isAvailable = await secondClient.checkNameAvailability(name)
+        assert.isFalse(isAvailable, 'Name should not be available in second API instance')
+
+        await secondApi.stop()
+    }
+
+    @test()
     protected async canRegisterAProjectAndGetCredentials() {
         const name = generateId()
 
@@ -143,6 +180,10 @@ export default class RegisteringProjectsTest extends AbstractSpruceTest {
             200,
             'Expected token to authenticate with Gitea'
         )
+    }
+
+    private async checkNameAvailability(name: string): Promise<boolean> {
+        return this.client.checkNameAvailability(name)
     }
 
     private async registerProject(name: string): Promise<ProjectCredentials> {

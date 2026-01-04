@@ -7,6 +7,12 @@ export default class RegressionProofClient {
         this.baseUrl = baseUrl
     }
 
+    public async checkNameAvailability(name: string): Promise<boolean> {
+        const response = await fetch(`${this.baseUrl}/check-name/${name}`)
+        const { available } = (await response.json()) as { available: boolean }
+        return available
+    }
+
     public async registerProject(
         options: RegisterProjectOptions
     ): Promise<ProjectCredentials> {
