@@ -1,4 +1,5 @@
 import Fastify, { FastifyInstance } from 'fastify'
+import ErrorOptions from '#spruce/errors/options.types'
 
 export default class RegressionProofApi {
     private server: FastifyInstance
@@ -23,7 +24,9 @@ export default class RegressionProofApi {
 
             if (this.projects.has(name)) {
                 void reply.status(409)
-                return { error: `Project '${name}' already exists` }
+                return {
+                    error: { code: 'PROJECT_ALREADY_EXISTS', name },
+                }
             }
 
             try {
@@ -35,7 +38,7 @@ export default class RegressionProofApi {
                 return { url, token }
             } catch (err) {
                 void reply.status(502)
-                return { error: this.formatGitServerError(err) }
+                return { error: this.buildGitServerError(err) }
             }
         })
 
@@ -45,7 +48,9 @@ export default class RegressionProofApi {
             const project = this.projects.get(name)
             if (!project) {
                 void reply.status(404)
-                return { error: 'Project not found' }
+                return {
+                    error: { code: 'PROJECT_NOT_FOUND', name },
+                }
             }
 
             try {
@@ -53,20 +58,20 @@ export default class RegressionProofApi {
                 return { url: project.url, token }
             } catch (err) {
                 void reply.status(502)
-                return { error: this.formatGitServerError(err) }
+                return { error: this.buildGitServerError(err) }
             }
         })
     }
 
-    private formatGitServerError(err: unknown): string {
+    private buildGitServerError(err: unknown): ErrorOptions {
         const message = err instanceof Error ? err.message : String(err)
         if (
             message.includes('ECONNREFUSED') ||
             message.includes('fetch failed')
         ) {
-            return `GIT_SERVER_UNAVAILABLE: Could not connect to git server at ${this.giteaUrl}`
+            return { code: 'GIT_SERVER_UNAVAILABLE', url: this.giteaUrl }
         }
-        return `GIT_SERVER_ERROR: ${message}`
+        return { code: 'GIT_SERVER_ERROR', message }
     }
 
     private async createGiteaToken(name: string): Promise<string> {

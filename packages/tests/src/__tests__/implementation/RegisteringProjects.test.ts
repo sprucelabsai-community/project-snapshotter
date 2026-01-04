@@ -2,6 +2,7 @@ import AbstractSpruceTest, {
     test,
     suite,
     assert,
+    errorAssert,
     generateId,
 } from '@sprucelabs/test-utils'
 import { RegressionProofApi } from '@regressionproof/api'
@@ -83,13 +84,20 @@ export default class RegisteringProjectsTest extends AbstractSpruceTest {
 
     @test()
     protected async refreshingNonExistentProjectThrows() {
-        await assert.doesThrowAsync(() => this.refreshCredentials(generateId()))
+        const name = generateId()
+
+        const err = await assert.doesThrowAsync(() =>
+            this.refreshCredentials(name)
+        )
+
+        errorAssert.assertError(err, 'PROJECT_NOT_FOUND', { name })
     }
 
     @test()
     protected async registeringWithUnreachableGiteaReturnsHelpfulError() {
+        const url = 'http://localhost:9999'
         const badApi = new RegressionProofApi({
-            giteaUrl: 'http://localhost:9999',
+            giteaUrl: url,
             giteaAdminUser: 'admin',
             giteaAdminPassword: 'password',
         })
@@ -103,11 +111,7 @@ export default class RegisteringProjectsTest extends AbstractSpruceTest {
             badClient.registerProject({ name: generateId() })
         )
 
-        assert.doesInclude(
-            err.message,
-            'GIT_SERVER',
-            'Expected error message to mention git server'
-        )
+        errorAssert.assertError(err, 'GIT_SERVER_UNAVAILABLE', { url })
 
         await badApi.stop()
     }
@@ -122,11 +126,7 @@ export default class RegisteringProjectsTest extends AbstractSpruceTest {
             this.registerProject(name)
         )
 
-        assert.doesInclude(
-            err.message,
-            'already exists',
-            'Expected error message to indicate project exists'
-        )
+        errorAssert.assertError(err, 'PROJECT_ALREADY_EXISTS', { name })
     }
 
     @test()

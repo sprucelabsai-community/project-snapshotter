@@ -1,3 +1,5 @@
+import { SpruceError } from '@regressionproof/api'
+
 export default class RegressionProofClient {
     private baseUrl: string
 
@@ -17,11 +19,7 @@ export default class RegressionProofClient {
         })
 
         if (!response.ok) {
-            const body = await this.parseErrorBody(response)
-            throw new Error(
-                body.error ??
-                    `Failed to register project: ${response.statusText}`
-            )
+            throw await this.parseErrorResponse(response)
         }
 
         return response.json()
@@ -39,23 +37,27 @@ export default class RegressionProofClient {
         })
 
         if (!response.ok) {
-            const body = await this.parseErrorBody(response)
-            throw new Error(
-                body.error ??
-                    `Failed to refresh credentials: ${response.statusText}`
-            )
+            throw await this.parseErrorResponse(response)
         }
 
         return response.json()
     }
 
-    private async parseErrorBody(
-        response: Response
-    ): Promise<{ error?: string }> {
+    private async parseErrorResponse(response: Response): Promise<SpruceError> {
         try {
-            return await response.json()
+            const body = await response.json()
+            if (body.error?.code) {
+                return new SpruceError(body.error)
+            }
+            return new SpruceError({
+                code: 'GIT_SERVER_ERROR',
+                message: `Request failed: ${response.statusText}`,
+            })
         } catch {
-            return {}
+            return new SpruceError({
+                code: 'GIT_SERVER_ERROR',
+                message: `Request failed: ${response.statusText}`,
+            })
         }
     }
 }
