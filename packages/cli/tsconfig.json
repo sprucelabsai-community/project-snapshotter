@@ -1,0 +1,42 @@
+{
+	"compilerOptions": {
+		"skipLibCheck": true,
+		"module": "ESNext",
+		"esModuleInterop": true,
+		"target": "ES2022",
+		"lib": [
+			"DOM",
+			"ES2022"
+		],
+		"jsx": "react",
+		"declaration": true,
+		"noImplicitAny": true,
+		"allowJs": true,
+		"forceConsistentCasingInFileNames": true,
+		"noImplicitReturns": true,
+		"strict": true,
+		"noUnusedLocals": true,
+		"resolveJsonModule": true,
+		"moduleResolution": "bundler",
+		"sourceMap": false,
+		"outDir": "build",
+		"baseUrl": "src",
+		"experimentalDecorators": true,
+		"paths": {
+			"#spruce/*": [
+				".spruce/*"
+			]
+		}
+	},
+	"include": [
+		"./src/*.ts",
+		"./src/**/*.ts",
+		"./src/*.tsx",
+		"./src/**/*.tsx",
+		"./src/.spruce/**/*"
+	],
+	"exclude": [
+		"build",
+		"esm"
+	]
+}

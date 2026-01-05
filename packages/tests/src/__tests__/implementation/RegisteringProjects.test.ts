@@ -67,7 +67,10 @@ export default class RegisteringProjectsTest extends AbstractSpruceTest {
 
         const secondClient = this.Client(secondApi)
         const isAvailable = await secondClient.checkNameAvailability(name)
-        assert.isFalse(isAvailable, 'Name should not be available in second API instance')
+        assert.isFalse(
+            isAvailable,
+            'Name should not be available in second API instance'
+        )
 
         await secondApi.stop()
     }
@@ -177,7 +180,9 @@ export default class RegisteringProjectsTest extends AbstractSpruceTest {
         errorAssert.assertError(err, 'PROJECT_NOT_FOUND', { name })
     }
 
-    private async assertThrowsProjectAlreadyExists(name: string): Promise<void> {
+    private async assertThrowsProjectAlreadyExists(
+        name: string
+    ): Promise<void> {
         const err = await assert.doesThrowAsync(() =>
             this.registerProject(name)
         )
@@ -193,8 +198,11 @@ export default class RegisteringProjectsTest extends AbstractSpruceTest {
     ): RegressionProofApi {
         return new RegressionProofApi({
             giteaUrl: options?.giteaUrl ?? process.env.GITEA_URL!,
-            giteaAdminUser: options?.giteaAdminUser ?? process.env.GITEA_ADMIN_USER!,
-            giteaAdminPassword: options?.giteaAdminPassword ?? process.env.GITEA_ADMIN_PASSWORD!,
+            giteaAdminUser:
+                options?.giteaAdminUser ?? process.env.GITEA_ADMIN_USER!,
+            giteaAdminPassword:
+                options?.giteaAdminPassword ??
+                process.env.GITEA_ADMIN_PASSWORD!,
         })
     }
 
