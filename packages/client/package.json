@@ -1,6 +1,7 @@
 {
   "name": "@regressionproof/client",
   "version": "0.0.1",
+  "type": "module",
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "scripts": {

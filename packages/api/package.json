@@ -1,6 +1,7 @@
 {
   "name": "@regressionproof/api",
   "version": "0.0.1",
+  "type": "module",
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "scripts": {
@@ -21,6 +22,7 @@
     "update.dependencies": "yarn run clean.dependencies && yarn",
     "resolve-paths.lint": "yarn run build.resolve-paths ; yarn run lint",
     "test": "jest",
+    "serve": "node build/serve.js",
     "watch.build.dev": "tsc-watch --sourceMap --onCompilationComplete 'yarn run post.watch.build'",
     "watch.rebuild": "yarn run clean.all && yarn install && yarn run watch.build.dev",
     "watch.tsc": "tsc -w"
@@ -37,10 +39,11 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@sprucelabs/error": "^8.0.14",
+    "@sprucelabs/error": "^8.1.0",
     "@sprucelabs/schema": "^33.0.24",
     "@sprucelabs/spruce-core-schemas": "^42.0.29",
     "@sprucelabs/spruce-skill-utils": "^33.0.28",
+    "dotenv": "^17.2.3",
     "fastify": "^5.0.0"
   },
   "description": "the api for managing snapshot repos",

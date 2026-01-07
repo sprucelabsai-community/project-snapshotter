@@ -10,9 +10,13 @@
     "test": "yarn workspaces run test",
     "lint": "yarn workspaces run lint",
     "fix.lint": "yarn workspaces run fix.lint",
-    "cli": "node packages/cli/build/cli.js"
+    "cli": "node packages/cli/build/cli.js",
+    "dev": "./scripts/boot-dev.sh"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"
+  },
+  "dependencies": {
+    "@sprucelabs/error": "^8.1.0"
   }
 }

@@ -1,8 +1,8 @@
 import { mkdirSync, writeFileSync } from 'fs'
 import path from 'path'
-import { gitCommit, gitPush } from './git'
-import { SnapshotOptions } from './snapshotter.types'
-import { syncFiles } from './sync'
+import { gitCommit, gitPush } from './git.js'
+import { SnapshotOptions } from './snapshotter.types.js'
+import { syncFiles } from './sync.js'
 
 export async function snapshot(options: SnapshotOptions): Promise<boolean> {
     const sourcePath = options.sourcePath ?? process.cwd()

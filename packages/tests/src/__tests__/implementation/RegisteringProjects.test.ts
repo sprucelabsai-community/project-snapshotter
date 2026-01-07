@@ -6,8 +6,7 @@ import AbstractSpruceTest, {
     generateId,
 } from '@sprucelabs/test-utils'
 import { RegressionProofApi } from '@regressionproof/api'
-import {
-    RegressionProofClient,
+import RegressionProofClient, {
     ProjectCredentials,
 } from '@regressionproof/client'
 

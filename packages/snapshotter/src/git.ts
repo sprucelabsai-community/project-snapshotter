@@ -2,7 +2,7 @@ import { exec } from 'child_process'
 import { existsSync } from 'fs'
 import path from 'path'
 import { promisify } from 'util'
-import { RemoteOptions } from './snapshotter.types'
+import { RemoteOptions } from './snapshotter.types.js'
 
 const execAsync = promisify(exec)
 

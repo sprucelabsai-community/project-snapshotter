@@ -1,2 +1,2 @@
-export { snapshot } from './snapshot'
-export * from './snapshotter.types'
+export { snapshot } from './snapshot.js'
+export * from './snapshotter.types.js'
