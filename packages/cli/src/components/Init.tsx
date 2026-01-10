@@ -1,5 +1,6 @@
 import { execSync } from 'child_process'
-import { RegressionProofClient } from '@regressionproof/client'
+import client from '@regressionproof/client'
+const RegressionProofClient = client.default ?? client
 import { Box, Text } from 'ink'
 import BigText from 'ink-big-text'
 import TextInput from 'ink-text-input'
