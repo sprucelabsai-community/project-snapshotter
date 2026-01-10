@@ -3,38 +3,73 @@ import type {
     Reporter,
     ReporterOnStartOptions,
     Test,
+    TestCaseResult,
     TestContext,
 } from '@jest/reporters'
+import { snapshot } from '@regressionproof/snapshotter'
+import { loadConfig } from './config/loadConfig.js'
+import { transformResults } from './transformers/transformResults.js'
 
 export default class RegressionProofReporter implements Reporter {
+    private cwd: string
+
+    public constructor(_globalConfig?: unknown, _reporterConfig?: unknown) {
+        this.cwd = process.cwd()
+    }
+
     public onRunStart(
         _results: AggregatedResult,
         _options: ReporterOnStartOptions
-    ): void {
-        // Called when test run starts
-    }
+    ): void {}
 
-    public onTestStart(_test: Test): void {
-        // Called when individual test file starts
-    }
+    public onTestFileStart(_test: Test): void {}
 
-    public onRunComplete(
+    public onTestCaseResult(
+        _test: Test,
+        _testCaseResult: TestCaseResult
+    ): void {}
+
+    public async onRunComplete(
         _testContexts: Set<TestContext>,
         results: AggregatedResult
-    ): Promise<void> | void {
-        // Called when all tests complete - this is where we snapshot
-        console.log('[RegressionProof] Test run complete, creating snapshot...')
+    ): Promise<void> {
+        const config = loadConfig(this.cwd)
+
+        if (!config) {
+            console.log(
+                '[RegressionProof] No config found. Run `regressionproof init` to set up.'
+            )
+            return
+        }
+
+        const testResults = transformResults(results, this.cwd)
+
         console.log(
-            `[RegressionProof] ${results.numPassedTests} passed, ${results.numFailedTests} failed`
+            `[RegressionProof] ${testResults.summary.passedTests}/${testResults.summary.totalTests} tests passed`
         )
 
-        // TODO: Transform results to our format
-        // TODO: Load config (.regressionproof.json)
-        // TODO: Call snapshotter
+        try {
+            const committed = await snapshot({
+                sourcePath: this.cwd,
+                mirrorPath: config.mirrorPath,
+                testResults,
+                remote: config.remote,
+            })
+
+            if (committed) {
+                console.log('[RegressionProof] Snapshot captured successfully')
+            } else {
+                console.log('[RegressionProof] No changes to snapshot')
+            }
+        } catch (err) {
+            console.error(
+                '[RegressionProof] Failed to capture snapshot:',
+                err instanceof Error ? err.message : err
+            )
+        }
     }
 
     public getLastError(): Error | void {
-        // Return error if reporter had issues
         return undefined
     }
 }
