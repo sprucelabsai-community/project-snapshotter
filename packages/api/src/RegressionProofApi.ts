@@ -27,6 +27,13 @@ export default class RegressionProofApi {
         this.server.post('/register', async (request, reply) => {
             const { name } = request.body as { name: string }
 
+            if (!this.isValidSlug(name)) {
+                void reply.status(400)
+                return {
+                    error: { code: 'INVALID_PROJECT_NAME', name },
+                }
+            }
+
             try {
                 const exists = await this.repoExists(name)
                 if (exists) {
@@ -103,6 +110,10 @@ export default class RegressionProofApi {
         return Buffer.from(
             `${this.giteaAdminUser}:${this.giteaAdminPassword}`
         ).toString('base64')
+    }
+
+    private isValidSlug(name: string): boolean {
+        return /^[a-z0-9]+(?:[-_][a-z0-9]+)*$/.test(name)
     }
 
     private buildGitServerError(err: unknown): ErrorOptions {

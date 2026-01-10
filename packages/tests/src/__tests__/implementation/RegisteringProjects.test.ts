@@ -121,7 +121,7 @@ export default class RegisteringProjectsTest extends AbstractSpruceTest {
 
     @test()
     protected async registeringWithUnreachableGiteaReturnsHelpfulError() {
-        const url = 'http://localhost:9999'
+        const url = 'http://localhost:59999'
         const badApi = this.Api({ giteaUrl: url })
         await badApi.start()
 
@@ -140,6 +140,20 @@ export default class RegisteringProjectsTest extends AbstractSpruceTest {
         const name = generateId()
         await this.registerProject(name)
         await this.assertThrowsProjectAlreadyExists(name)
+    }
+
+    @test()
+    protected async registeringWithInvalidNameThrows() {
+        const invalidNames = [
+            'My Project',
+            'has spaces',
+            'UPPERCASE',
+            'special@chars!',
+        ]
+
+        for (const name of invalidNames) {
+            await this.assertThrowsInvalidProjectName(name)
+        }
     }
 
     @test()
@@ -186,6 +200,13 @@ export default class RegisteringProjectsTest extends AbstractSpruceTest {
             this.registerProject(name)
         )
         errorAssert.assertError(err, 'PROJECT_ALREADY_EXISTS', { name })
+    }
+
+    private async assertThrowsInvalidProjectName(name: string): Promise<void> {
+        const err = await assert.doesThrowAsync(() =>
+            this.registerProject(name)
+        )
+        errorAssert.assertError(err, 'INVALID_PROJECT_NAME', { name })
     }
 
     private Api(

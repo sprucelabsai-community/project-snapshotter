@@ -5,16 +5,25 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "yarn workspaces run build.dev",
-    "watch": "concurrently -n snap,api,client,cli -c blue,green,yellow,magenta \"yarn workspace @regressionproof/snapshotter watch.build.dev\" \"yarn workspace @regressionproof/api watch.build.dev\" \"yarn workspace @regressionproof/client watch.build.dev\" \"yarn workspace @regressionproof/cli watch.build.dev\"",
-    "test": "yarn workspaces run test",
-    "lint": "yarn workspaces run lint",
-    "fix.lint": "yarn workspaces run fix.lint",
+    "build": "lerna run build.dev",
+    "build.dev": "lerna run build.dev",
+    "build.dist": "lerna run build.dist",
+    "clean": "lerna run clean",
+    "clean.all": "yarn clean.dependencies && yarn clean.build",
+    "clean.build": "for d in packages/*; do echo $d; cd $d; yarn clean.build; cd ../..; done",
+    "clean.dependencies": "rm -rf node_modules/ package-lock.json yarn.lock && for d in packages/*; do echo $d; cd $d; yarn clean.dependencies; cd ../..; done",
+    "rebuild": "yarn clean.all && yarn && yarn build.dev",
+    "watch": "concurrently -n snap,api,client,cli,jest -c blue,green,yellow,magenta,cyan \"yarn workspace @regressionproof/snapshotter watch.build.dev\" \"yarn workspace @regressionproof/api watch.build.dev\" \"yarn workspace @regressionproof/client watch.build.dev\" \"yarn workspace @regressionproof/cli watch.build.dev\" \"yarn workspace @regressionproof/jest-reporter watch.build.dev\"",
+    "watch.build.dev": "lerna run watch.build.dev --stream --parallel",
+    "test": "lerna run test --stream --concurrency=1",
+    "lint": "lerna run lint",
+    "fix.lint": "lerna run fix.lint",
     "cli": "node packages/cli/build/cli.js",
     "dev": "./scripts/boot-dev.sh"
   },
   "devDependencies": {
-    "concurrently": "^9.1.2"
+    "concurrently": "^9.1.2",
+    "lerna": "^9.0.3"
   },
   "dependencies": {
     "@sprucelabs/error": "^8.1.0"

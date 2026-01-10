@@ -1,5 +1,5 @@
 import { execSync } from 'child_process'
-import RegressionProofClient from '@regressionproof/client'
+import { RegressionProofClient } from '@regressionproof/client'
 import { Box, Text } from 'ink'
 import BigText from 'ink-big-text'
 import TextInput from 'ink-text-input'
@@ -7,6 +7,15 @@ import React, { useEffect, useState } from 'react'
 
 const API_URL =
     process.env.REGRESSIONPROOF_API_URL ?? 'https://api.regressionproof.ai'
+
+function toSlug(input: string): string {
+    return input
+        .toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9-_]/g, '')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '')
+}
 
 function getRepoName(): string {
     try {
@@ -17,7 +26,7 @@ function getRepoName(): string {
         // git@github.com:user/repo.git -> repo
         // https://github.com/user/repo.git -> repo
         const match = remoteUrl.match(/[/:]([^/:]+?)(\.git)?$/)
-        return match?.[1] ?? ''
+        return toSlug(match?.[1] ?? '')
     } catch {
         return ''
     }
@@ -46,7 +55,10 @@ export default function Init(): React.ReactElement {
                 setErrorMessage('')
             } catch (err) {
                 setAvailability('error')
-                setErrorMessage(err instanceof Error ? err.message : String(err))
+                const cause = err instanceof Error && 'cause' in err ? ` (${err.cause})` : ''
+                setErrorMessage(
+                    `${err instanceof Error ? err.message : String(err)}${cause} - ${API_URL}`
+                )
             }
         }, 300)
 
@@ -82,7 +94,7 @@ export default function Init(): React.ReactElement {
                 <Box>
                     <TextInput
                         value={name}
-                        onChange={setName}
+                        onChange={(value) => setName(toSlug(value))}
                         placeholder="my-awesome-project"
                     />
                     <Box marginLeft={2}>{getStatusIndicator()}</Box>

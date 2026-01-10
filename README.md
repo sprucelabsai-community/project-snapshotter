@@ -6,15 +6,15 @@ A TypeScript tool for capturing code evolution through the TDD cycle, with the u
 
 ### Core Concept
 
-- Programmatic library imported by Spruce CLI
-- Called directly after each test run (no CLI/subprocess overhead)
+- Integrates with test runners via reporters/plugins (Jest, Vitest, etc.)
+- Triggered automatically after each test run
 - Syncs source code to an isolated mirror directory
 - Commits code + test metadata together, building a git history of TDD progression
 - This history becomes training data for LLMs
 
 ### Key Advantage
 
-Controlled environment (Spruce CLI) means we can make assumptions about project structure, test runners, output formats, etc.
+Test runner reporters give us direct access to test results in a structured format, making integration straightforward across different frameworks.
 
 ## Architecture Decisions
 
@@ -42,12 +42,12 @@ A snapshot is:
 
 ### How Do We Trigger Snapshots?
 
-Spruce CLI imports this package and calls `snapshot()` directly after each completed test run. No watcher/daemon needed - simpler and more reliable.
+Test runner integrations (e.g., Jest reporter) call `snapshot()` directly after each completed test run. No watcher/daemon needed - simpler and more reliable.
 
 **Flow:**
 1. Test run completes
-2. Spruce CLI collects test results
-3. Spruce CLI calls `await snapshot({ testResults, ... })` (see [API](#api))
+2. Reporter collects test results
+3. Reporter calls `await snapshot({ testResults, ... })` (see [API](#api))
 4. Snapshotter syncs source files to mirror directory
 5. Snapshotter writes test results to mirror (at `.snapshotter/testResults.json`)
 6. Snapshotter commits everything together
@@ -58,7 +58,7 @@ Spruce CLI imports this package and calls `snapshot()` directly after each compl
 - **Deduplication**: Handled naturally by git - if no code changed since last snapshot, nothing to commit
 
 This is a clean separation of concerns:
-- **Spruce CLI**: knows about tests, writes metadata, calls snapshot()
+- **Reporter**: knows about tests, collects results, calls snapshot()
 - **Snapshotter**: handles syncing, committing, history management
 
 ### Git Hosting & Remote Push
@@ -76,32 +76,33 @@ Snapshots are pushed to a self-hosted **Gitea** instance after each commit. This
 ```
 Developer's machine                Our infrastructure
 ┌──────────────────────┐          ┌─────────────────┐
-│  Spruce CLI          │          │  Snapshot API   │
-│    ↓                 │ ──────── │  (creates repos │
-│  (gets credentials)  │ ←─────── │   and tokens)   │
-│    ↓                 │          └────────┬────────┘
-│  Snapshotter         │                   │
-│    ↓                 │          ┌────────▼────────┐
-│  Push to Gitea       │ ───────→ │     Gitea       │
-└──────────────────────┘          │  (self-hosted)  │
-                                  └─────────────────┘
+│  regressionproof     │          │  Snapshot API   │
+│  init (CLI)          │ ──────── │  (creates repos │
+│    ↓                 │ ←─────── │   and tokens)   │
+│  (saves credentials) │          └────────┬────────┘
+│                      │                   │
+│  Test Runner         │          ┌────────▼────────┐
+│  + Reporter          │ ───────→ │     Gitea       │
+│    ↓                 │          │  (self-hosted)  │
+│  Snapshotter → Push  │          └─────────────────┘
+└──────────────────────┘
 ```
 
-**Snapshot API** (future - separate from this library):
+**Snapshot API**:
 - Hosted alongside Gitea
 - Holds the Gitea admin token securely (never exposed to developers)
-- Spruce CLI calls it to register a project
+- `regressionproof init` CLI calls it to register a project
 - Creates a repo under the admin account
 - Generates a scoped token for that repo
-- Returns `{ url, token }` to Spruce CLI
+- Returns `{ url, token }` which are saved locally
 
 **Flow:**
-1. Spruce CLI calls Snapshot API to register project → gets `{ url, token }`
-2. Spruce CLI passes credentials to snapshotter (as `remote` option - see [API](#api))
+1. Developer runs `regressionproof init` → registers project → credentials saved locally
+2. Test runner reporter reads credentials and passes to snapshotter
 3. After each snapshot commit, snapshotter pushes to Gitea
 4. All repos live under admin account for easy training data access
 
-**Note:** This library only handles snapshotting and pushing. Obtaining credentials is the responsibility of the caller (Spruce CLI).
+**Note:** This library only handles snapshotting and pushing. The CLI handles registration and the reporter handles triggering snapshots.
 
 **Local Development:**
 ```bash
@@ -112,7 +113,7 @@ Developer's machine                Our infrastructure
 
 ### Test Results Format
 
-Test results are passed by Spruce CLI as an object on every completed test run. The snapshotter writes them to `.snapshotter/testResults.json` in the mirror directory and commits alongside the code, so each commit has both the code state and the test results that triggered it.
+Test results are passed by the test runner reporter as an object on every completed test run. The snapshotter writes them to `.snapshotter/testResults.json` in the mirror directory and commits alongside the code, so each commit has both the code state and the test results that triggered it.
 
 #### Schema
 
@@ -268,3 +269,81 @@ The developer is ultimately responsible for:
 - Maintaining a proper `.gitignore`
 - Not hardcoding secrets in source files
 - Reviewing what gets captured if working with sensitive data
+
+## Next Steps / Open Questions
+
+### Jest Reporter (`@regressionproof/jest-reporter`)
+
+**Status:** Package scaffolded with reporter skeleton
+
+**Done:**
+- [x] Package setup (ESM, workspace integrated)
+- [x] Reporter class with Jest hooks (`onRunStart`, `onTestStart`, `onRunComplete`)
+
+**TODO:**
+- [ ] Transform Jest `AggregatedResult` → our `TestResults` format
+- [ ] Load config from `.regressionproof.json`
+- [ ] Call snapshotter in `onRunComplete`
+- [ ] Graceful error handling (don't crash test runs)
+
+**Usage (once complete):**
+```javascript
+// jest.config.js
+module.exports = {
+  reporters: ['default', '@regressionproof/jest-reporter']
+}
+```
+
+### CLI Init Flow
+
+The `regressionproof init` command needs to:
+
+1. **Register project** - Call API to create repo and get credentials (partially done - name checking works)
+2. **Store credentials** - Save to `~/.regressionproof/<project-hash>/config.json`
+3. **Auto-configure Jest** - Add reporter to `package.json` or `jest.config.ts`
+
+### Config & Mirror Location
+
+All RegressionProof data lives in the user's home directory:
+
+```
+~/.regressionproof/
+  <project-hash>/
+    config.json    # credentials + settings
+    mirror/        # git mirror (isolated repo)
+```
+
+**Why home directory?**
+- Keeps project directory clean (no `.regressionproof/` folder)
+- Survives across project clones
+- No gitignore needed
+- Credentials not accidentally committed
+
+**config.json format:**
+
+```json
+{
+  "remote": {
+    "url": "http://gitea.example.com/admin/my-project.git",
+    "token": "scoped-token-here"
+  }
+}
+```
+
+**Project hash:** Based on project path or git remote URL (TBD)
+
+### Decisions
+
+- **Config/mirror in home directory** - `~/.regressionproof/<project-hash>/` keeps project clean, survives clones, avoids credential leaks
+- **Auto-modify jest config** - `regressionproof init` will automatically add the reporter:
+  1. Check `package.json` for `jest.reporters` first (Spruce CLI style)
+  2. Fallback to `jest.config.ts`
+- **Jest-only for now** - Ship Jest reporter first, but future vision includes other test frameworks (Vitest, Mocha) and other languages
+
+### Progress Tracker
+
+- [x] `@regressionproof/snapshotter` - Core snapshot library
+- [x] `@regressionproof/api` - Project registration API
+- [x] `@regressionproof/client` - API client
+- [x] `@regressionproof/cli` - CLI (init partially done)
+- [ ] `@regressionproof/jest-reporter` - Jest integration (in progress)

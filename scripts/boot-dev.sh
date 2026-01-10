@@ -61,8 +61,8 @@ GITEA_ADMIN_USER=${ADMIN_USER}
 GITEA_ADMIN_PASSWORD=${ADMIN_PASSWORD}
 EOF
 
-# Write CLI .env
-cat > packages/cli/.env << EOF
+# Write root .env for CLI
+cat > .env << EOF
 REGRESSIONPROOF_API_URL=http://localhost:${API_PORT}
 EOF
 

@@ -1,17 +1,27 @@
 {
-	"extends": "../../tsconfig.base.json",
-	"compilerOptions": {
-		"sourceMap": false,
-		"outDir": "build",
-		"baseUrl": "src",
-		"paths": {
-			"#spruce/*": [".spruce/*"]
-		}
-	},
-	"include": [
-		"./src/*.ts",
-		"./src/**/*.ts",
-		"./src/.spruce/**/*"
-	],
-	"exclude": ["build", "esm"]
+  "compilerOptions": {
+    "skipLibCheck": true,
+    "module": "CommonJS",
+    "esModuleInterop": true,
+    "target": "ES2020",
+    "lib": ["DOM", "ES2022"],
+    "declaration": true,
+    "noImplicitAny": true,
+    "allowJs": true,
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitReturns": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "resolveJsonModule": true,
+    "moduleResolution": "node",
+    "sourceMap": false,
+    "outDir": "build",
+    "baseUrl": "src",
+    "experimentalDecorators": true,
+    "paths": {
+      "#spruce/*": [".spruce/*"]
+    }
+  },
+  "include": ["./src/*.ts", "./src/**/*.ts", "./src/.spruce/**/*"],
+  "exclude": ["build", "esm"]
 }

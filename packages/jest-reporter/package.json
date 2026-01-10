@@ -1,12 +1,30 @@
 {
-  "name": "@regressionproof/tests",
+  "name": "@regressionproof/jest-reporter",
   "version": "0.0.1",
+  "main": "./build/index.js",
+  "types": "./build/index.d.ts",
+  "module": "./build/esm/index.js",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./build/esm/index.d.ts",
+        "default": "./build/esm/index.js"
+      },
+      "require": {
+        "types": "./build/index.d.ts",
+        "default": "./build/index.js"
+      }
+    }
+  },
   "scripts": {
     "build.ci": "yarn run build.tsc && yarn run build.resolve-paths && yarn run lint",
     "build.dev": "yarn run build.tsc --sourceMap ; yarn run resolve-paths.lint",
     "build.copy-files": "mkdir -p build && rsync -avzq --exclude='*.ts' ./src/ ./build/",
     "build.resolve-paths": "resolve-path-aliases --target build --patterns '**/*.js,**/*.d.ts'",
     "build.tsc": "yarn run build.copy-files && tsc",
+    "build.dist": "tsc --project tsconfig.dist.json && yarn build.resolve-paths && mv build esm && yarn build.esm-postbuild && yarn build.tsc && yarn build.resolve-paths && mv esm build/",
+    "build.esm-postbuild": "esm-postbuild --target esm --patterns '**/*.js'",
     "clean": "yarn run clean.build",
     "clean.all": "yarn run clean.dependencies && yarn run clean.build",
     "clean.build": "rm -rf build/",
@@ -18,17 +36,23 @@
     "rebuild": "yarn run clean.all && yarn install && yarn run build.dev",
     "update.dependencies": "yarn run clean.dependencies && yarn",
     "resolve-paths.lint": "yarn run build.resolve-paths ; yarn run lint",
-    "test": "jest --forceExit",
+    "test": "jest --passWithNoTests",
     "watch.build.dev": "tsc-watch --sourceMap --onCompilationComplete 'yarn run post.watch.build'",
     "watch.rebuild": "yarn run clean.all && yarn install && yarn run watch.build.dev",
     "watch.tsc": "tsc -w"
   },
+  "dependencies": {
+    "@regressionproof/snapshotter": "^0.0.1"
+  },
   "devDependencies": {
-    "@sprucelabs/jest-json-reporter": "^10.0.17",
-    "@sprucelabs/resolve-path-aliases": "^4.0.12",
-    "@sprucelabs/test": "^11.0.5",
-    "@sprucelabs/test-utils": "^7.1.2",
-    "@types/node": "^25.0.3",
+    "@jest/reporters": "^30.2.0",
+    "@sprucelabs/esm-postbuild": "^9.0.13",
+    "@sprucelabs/jest-json-reporter": "^10.0.19",
+    "@sprucelabs/resolve-path-aliases": "^4.0.13",
+    "@sprucelabs/test": "^11.1.0",
+    "@sprucelabs/test-utils": "^7.2.3",
+    "@types/jest": "^29.5.14",
+    "@types/node": "^25.0.5",
     "chokidar-cli": "^3.0.0",
     "eslint": "^9.39.2",
     "eslint-config-spruce": "^11.2.26",
@@ -39,23 +63,15 @@
     "tsc-watch": "^7.2.0",
     "typescript": "^5.9.3"
   },
-  "dependencies": {
-    "@regressionproof/api": "^0.0.1",
-    "@regressionproof/client": "^0.0.1",
-    "dotenv": "^17.2.3"
-  },
-  "description": "handles tests of the regression proof ecosystem",
+  "description": "Train LLM's on TDD using jest!",
   "skill": {
-    "namespace": "regressionproof-tests"
+    "namespace": "regressionproof-jest-reporter"
   },
   "jest": {
     "testRunner": "jest-circus/runner",
     "maxWorkers": 4,
     "testTimeout": 120000,
     "testEnvironment": "node",
-    "globalSetup": "<rootDir>/build/jest.setup.js",
-    "globalTeardown": "<rootDir>/build/jest.teardown.js",
-    "setupFilesAfterEnv": ["<rootDir>/build/jest.setupAfterEnv.js"],
     "testPathIgnorePatterns": [
       "<rootDir>/tmp/",
       "<rootDir>/src/",

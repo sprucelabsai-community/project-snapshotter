@@ -1,27 +1,26 @@
 {
   "compilerOptions": {
+    "module": "ES2020",
+    "target": "ES6",
+    "lib": ["ES2020", "DOM"],
     "skipLibCheck": true,
-    "module": "CommonJS",
     "esModuleInterop": true,
-    "target": "ES2020",
-    "lib": ["DOM", "ES2022"],
+    "moduleResolution": "node",
     "declaration": true,
     "noImplicitAny": true,
-    "allowJs": true,
     "forceConsistentCasingInFileNames": true,
     "noImplicitReturns": true,
     "strict": true,
     "noUnusedLocals": true,
     "resolveJsonModule": true,
-    "moduleResolution": "node",
     "sourceMap": false,
-    "outDir": "build",
+    "outDir": "./build",
     "baseUrl": "src",
     "experimentalDecorators": true,
     "paths": {
       "#spruce/*": [".spruce/*"]
     }
   },
-  "include": ["./src/*.ts", "./src/**/*.ts", "./src/.spruce/**/*"],
-  "exclude": ["build", "esm"]
+  "include": ["./src/*.ts", "./src/**/*.ts"],
+  "exclude": ["**/node_modules/*", "build/*", "esm/*"]
 }
