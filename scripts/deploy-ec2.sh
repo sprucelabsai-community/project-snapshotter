@@ -204,8 +204,6 @@ EOF
 fi
 
 cat > "$ROOT_DIR/docker-compose.yml" <<EOF
-version: "3.8"
-
 services:
   gitea:
     image: gitea/gitea:1.22

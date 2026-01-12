@@ -108,8 +108,6 @@ mkdir -p ~/regressionproof/{api,gitea,nginx}
 Create `~/regressionproof/docker-compose.yml`:
 
 ```yaml
-version: "3.8"
-
 services:
   gitea:
     image: gitea/gitea:1.22
