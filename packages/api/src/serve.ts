@@ -1,7 +1,7 @@
 import 'dotenv/config'
 import path from 'path'
-import RegressionProofApi from './RegressionProofApi.js'
 import { openDb } from './db/index.js'
+import RegressionProofApi from './RegressionProofApi.js'
 import { InvitesStore } from './stores/index.js'
 
 const PORT = parseInt(process.env.API_PORT ?? '3000')

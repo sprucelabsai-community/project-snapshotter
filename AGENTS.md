@@ -93,3 +93,27 @@ Applying these five design principles helps prevent "super-agent" bloat, reduces
 - **Example:**
   - **Concretion (Bad):** OpenAI.chat_completion(prompt) called directly inside your agent code.
   - **Abstraction (Good):** Agent.generate(prompt) which calls an abstract LLMProvider. You can then "inject" OpenAIProvider, AnthropicProvider, or LocalModelProvider at runtime.
+
+## Test-Driven Development (TDD) Protocols
+
+All development must strictly adhere to the Three Laws of TDD. These laws mandate a "nano-cycle" workflow where the time between running tests is measured in seconds or minutes, ensuring the system remains executing at all times.
+
+### The Three Laws
+
+1. No Production Code Without Failure: You may not write any production code unless it is to make a failing unit test pass.
+2. Minimal Test Writing: You may not write more of a unit test than is sufficient to fail; failing to compile is considered a valid failure.
+3. Minimal Production Code: You may not write more production code than is sufficient to pass the currently failing unit test.
+
+### The Red-Green-Refactor Cycle
+
+The criticalness of TDD lies in its tight feedback loop, which provides immediate verification and prevents "invisible drift" in complex systems.
+
+- Red (Tight Specification): Write a failing test first to define exactly what success looks like. This forces you to design the API from the perspective of its consumer before any implementation exists.
+- Green (Rapid Feedback): Write the absolute minimum code to pass the test. The priority here is the feedback speed—once the test is green, you have a "safe harbor" of working code.
+- Refactor (Fearless Optimization): With a passing test suite as a safety net, you must clean up and optimize the code. This is the only time design improvements should happen. The feedback loop ensures that if a refactor breaks logic, you know exactly which change caused the issue within seconds.
+
+### Why This is Critical for Agents
+
+- Instant Verification: Frequent test runs (every 30–60 seconds) mean debugging is nearly eliminated because the bug must be in the handful of lines written since the last pass.
+- Confidence to Release: A comprehensive suite of "cannot fail" tests allows for rapid iteration and deployment with total confidence in system stability.
+- Prevention of Rot: Slow feedback loops lead to developer fatigue and code rot. Keeping tests fast and the cycle tight ensures the cost of refactoring remains low.

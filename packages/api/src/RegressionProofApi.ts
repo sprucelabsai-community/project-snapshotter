@@ -98,7 +98,9 @@ export default class RegressionProofApi {
             const token = this.getBearerToken(request.headers.authorization)
             if (!token) {
                 void reply.status(401)
-                return { error: { message: 'Missing Authorization bearer token' } }
+                return {
+                    error: { message: 'Missing Authorization bearer token' },
+                }
             }
 
             const hasAccess = await this.verifyProjectAccess(name, token)
@@ -233,11 +235,17 @@ export default class RegressionProofApi {
         return response.ok
     }
 
-    private handleInviteError(err: unknown, reply: { status: (n: number) => void }) {
+    private handleInviteError(
+        err: unknown,
+        reply: { status: (n: number) => void }
+    ) {
         const message = err instanceof Error ? err.message : String(err)
         if (message === 'Invite not found') {
             void reply.status(404)
-        } else if (message === 'Invite revoked' || message === 'Invite already used') {
+        } else if (
+            message === 'Invite revoked' ||
+            message === 'Invite already used'
+        ) {
             void reply.status(409)
         } else {
             void reply.status(500)

@@ -52,11 +52,7 @@ export default class InvitesStore {
             usedAt: row.usedAt ?? null,
             revokedAt: row.revokedAt ?? null,
             note: row.note ?? null,
-            status: row.revokedAt
-                ? 'revoked'
-                : row.usedAt
-                  ? 'used'
-                  : 'active',
+            status: row.revokedAt ? 'revoked' : row.usedAt ? 'used' : 'active',
         }))
     }
 
@@ -71,9 +67,7 @@ export default class InvitesStore {
         )
     }
 
-    public async acceptInvite(
-        token: string
-    ): Promise<{ projectName: string }> {
+    public async acceptInvite(token: string): Promise<{ projectName: string }> {
         const tokenHash = this.hashToken(token)
         const invite = await this.db.get<InviteRecord>(
             `SELECT token_hash AS tokenHash,
