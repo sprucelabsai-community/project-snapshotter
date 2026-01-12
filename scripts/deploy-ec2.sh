@@ -2,13 +2,13 @@
 
 set -euo pipefail
 
-SCRIPT_VERSION="0.2.12"
+SCRIPT_VERSION="0.2.13"
 LAST_CHANGES=(
+    "Fix systemd unit to support docker-compose fallback"
     "Skip Gitea setup when env file exists"
     "Offer optional systemd boot setup"
     "Bind API to 0.0.0.0 via API_HOST"
     "Pause for manual Gitea setup before starting API"
-    "Start Gitea and Nginx before API"
 )
 REPO_URL="${REPO_URL:-https://github.com/sprucelabsai-community/regressionproof.git}"
 ROOT_DIR="${ROOT_DIR:-$HOME/regressionproof}"
@@ -410,8 +410,8 @@ After=docker.service
 Type=oneshot
 RemainAfterExit=yes
 WorkingDirectory=${ROOT_DIR}
-ExecStart=/usr/bin/docker compose up -d
-ExecStop=/usr/bin/docker compose down
+ExecStart=/bin/sh -lc 'if docker compose version >/dev/null 2>&1; then docker compose up -d; else docker-compose up -d; fi'
+ExecStop=/bin/sh -lc 'if docker compose version >/dev/null 2>&1; then docker compose down; else docker-compose down; fi'
 TimeoutStartSec=0
 
 [Install]
