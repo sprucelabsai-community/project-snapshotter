@@ -1,5 +1,8 @@
 FROM node:22-bullseye-slim AS build
 
+RUN apt-get update && apt-get install -y --no-install-recommends rsync \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 COPY package.json lerna.json tsconfig.base.json ./
