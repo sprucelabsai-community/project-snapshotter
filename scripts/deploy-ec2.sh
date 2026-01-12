@@ -309,11 +309,17 @@ if ! run_compose_base; then
     echo "  newgrp docker"
 fi
 
-echo ""
-echo "Gitea setup required:"
-echo "  Open: http://${GIT_DOMAIN}"
-echo "  Complete the setup wizard and create the admin user."
-read -r -p "Press Enter to continue once Gitea setup is complete..." _
+if [ -f "$ROOT_DIR/.regressionproof.env" ]; then
+    echo "Found existing admin credentials at $ROOT_DIR/.regressionproof.env"
+    # shellcheck disable=SC1090
+    source "$ROOT_DIR/.regressionproof.env"
+else
+    echo ""
+    echo "Gitea setup required:"
+    echo "  Open: http://${GIT_DOMAIN}"
+    echo "  Complete the setup wizard and create the admin user."
+    read -r -p "Press Enter to continue once Gitea setup is complete..." _
+fi
 
 if [ -z "$GITEA_ADMIN_PASSWORD" ]; then
     if [ -t 0 ] || [ -t 1 ]; then
