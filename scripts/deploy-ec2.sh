@@ -2,13 +2,13 @@
 
 set -euo pipefail
 
-SCRIPT_VERSION="0.2.6"
+SCRIPT_VERSION="0.2.7"
 LAST_CHANGES=(
+    "Prompt for Gitea admin credentials when missing"
     "Generate and export Gitea admin credentials"
     "Install rsync in API Docker build stage"
     "Use Node 22 base image for API build"
     "Handle missing yarn.lock during API image build"
-    "Add sudo fallback when Docker permissions are missing"
 )
 REPO_URL="${REPO_URL:-https://github.com/sprucelabsai-community/regressionproof.git}"
 ROOT_DIR="${ROOT_DIR:-$HOME/regressionproof}"
@@ -322,5 +322,20 @@ generate_password() {
 }
 
 if [ -z "$GITEA_ADMIN_PASSWORD" ]; then
-    GITEA_ADMIN_PASSWORD="$(generate_password)"
+    if [ -t 0 ]; then
+        echo "Gitea admin credentials"
+        read -r -p "Admin username [${GITEA_ADMIN_USER}]: " input_user
+        if [ -n "$input_user" ]; then
+            GITEA_ADMIN_USER="$input_user"
+        fi
+        read -r -s -p "Admin password (leave blank to auto-generate): " input_pass
+        echo ""
+        if [ -n "$input_pass" ]; then
+            GITEA_ADMIN_PASSWORD="$input_pass"
+        else
+            GITEA_ADMIN_PASSWORD="$(generate_password)"
+        fi
+    else
+        GITEA_ADMIN_PASSWORD="$(generate_password)"
+    fi
 fi
