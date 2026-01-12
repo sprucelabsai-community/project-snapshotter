@@ -2,7 +2,14 @@
 
 set -euo pipefail
 
-SCRIPT_VERSION="0.2.0"
+SCRIPT_VERSION="0.2.1"
+LAST_CHANGES=(
+    "Add sudo fallback when Docker permissions are missing"
+    "Support flexible/strict SSL modes via --sslMode"
+    "Add regressionproof.ai banner with version"
+    "Require Cloudflare origin certs in strict mode"
+    "Build API from source with Dockerfile"
+)
 REPO_URL="${REPO_URL:-https://github.com/sprucelabsai-community/regressionproof.git}"
 ROOT_DIR="${ROOT_DIR:-$HOME/regressionproof}"
 API_DOMAIN="${API_DOMAIN:-api.regressionproof.ai}"
@@ -34,6 +41,10 @@ EOF
 echo "=============================================="
 echo "regressionproof.ai deployment bootstrap"
 echo "Version: ${SCRIPT_VERSION}"
+echo "Last 5 Changes:"
+for change in "${LAST_CHANGES[@]}"; do
+    echo "- ${change}"
+done
 echo "=============================================="
 
 for arg in "$@"; do
@@ -258,10 +269,33 @@ if [ "$SSL_MODE" = "strict" ]; then
     fi
 fi
 
-if docker compose version >/dev/null 2>&1; then
-    docker compose up -d --build
-else
-    docker-compose up -d --build
+run_compose() {
+    if docker compose version >/dev/null 2>&1; then
+        docker compose up -d --build
+    else
+        docker-compose up -d --build
+    fi
+}
+
+if ! run_compose; then
+    if docker ps >/dev/null 2>&1; then
+        echo "Docker is running but compose failed."
+        exit 1
+    fi
+
+    echo "Docker permissions not available for this user."
+    echo "Attempting with sudo..."
+
+    if docker compose version >/dev/null 2>&1; then
+        sudo docker compose up -d --build
+    else
+        sudo docker-compose up -d --build
+    fi
+
+    echo ""
+    echo "To avoid sudo next time, run:"
+    echo "  sudo usermod -aG docker $USER"
+    echo "  newgrp docker"
 fi
 
 echo "Deployment complete."
