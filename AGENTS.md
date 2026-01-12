@@ -38,3 +38,10 @@ Commit messages must follow semver intent for CI/CD:
 - When plans change, reprint the full plan with status markers.
 - Mark completed steps as checked off, removed steps as crossed out, and new steps as highlighted.
 - Always explain why the plan changed before continuing.
+
+## Bugfixing Principles
+
+- Investigate problems thoroughly (think RCA) before proposing fixes.
+- Explain the understood issue back to the user to prove comprehension.
+- No "stabbing at things" or guesswork changes.
+- If the problem is not understood, zoom out and review again.
