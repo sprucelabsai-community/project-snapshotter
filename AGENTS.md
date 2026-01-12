@@ -7,14 +7,6 @@
 3. **Detail the step** - Before executing, present the step in full detail (complete code, file paths, rationale) for review and approval
 4. **Execute** - Implement the approved step, then present the next step in detail and repeat
 
-## Commit Message Convention
-
-Commit messages must follow semver intent for CI/CD:
-
-- `patch: {detailed description of changes}` for immaterial behavior changes
-- `minor: {detailed description of changes}` for new features
-- `major: {detailed description of changes}` for breaking changes
-
 ## Planning Principles
 
 - Plans describe discrete, concrete mutations to code/config.
@@ -55,6 +47,12 @@ Commit messages must follow semver intent for CI/CD:
 - All class names are to be capitalized in PascalCase.
 - Files that define a class should be named after that class in PascalCase (e.g., `DataFetcher.py` for class `DataFetcher`) and the class should be the default export.
 - We take types and formatting seriously, consider running `yarn fix.lint` after making changes.
+- Before pushing, run `yarn fix.lint` and `yarn build.ci` successfully.
+
+## Refactor Principles
+
+- Do not use git commands to refactor (e.g., avoid `git mv`).
+- Make refactors via local file changes, then commit those changes.
 
 ## SOLID Principles for AI Agents
 
@@ -106,14 +104,37 @@ All development must strictly adhere to the Three Laws of TDD. These laws mandat
 
 ### The Red-Green-Refactor Cycle
 
-The criticalness of TDD lies in its tight feedback loop, which provides immediate verification and prevents "invisible drift" in complex systems.
+The criticalness of TDD lies in its tight feedback loop, which provides immediate verification and prevents "invisible drift" in complex systems. All our tests watch and rerun on every change, this is our continuous safety net while developing. The tests will also run in CI/CD pipelines to ensure no regressions are introduced.
 
-- Red (Tight Specification): Write a failing test first to define exactly what success looks like. This forces you to design the API from the perspective of its consumer before any implementation exists.
+- Red (Tight Specification): Write a failing test first that approaches to solve the first, smallest piece of functionality you want to add. 
+  - Most times, this is failing because the function or class does not yet exist.
+  - It can cover calling a method with missing or incorrect parameters
+  - It can cover edge cases or error conditions.
+  - Write the smallest test possible to force the production code changes to be as small as possible.
+  - Think of the test as a challenge to the production code writer to solve with the least amount of code.
 - Green (Rapid Feedback): Write the absolute minimum code to pass the test. The priority here is the feedback speed—once the test is green, you have a "safe harbor" of working code.
+  - This code may be ugly, unoptimized, or even hard-coded.
+  - The goal is to get to a passing state as quickly as possible to maintain momentum and confidence.
+  - Think of this as a challenge to the test writer to write another test that forces improvement.
+  - In the end, the code should have no choice but to work.
+  - Many times the production code starts in the same file as the test code for speed, just at the bottom.
 - Refactor (Fearless Optimization): With a passing test suite as a safety net, you must clean up and optimize the code. This is the only time design improvements should happen. The feedback loop ensures that if a refactor breaks logic, you know exactly which change caused the issue within seconds.
+  - It is best to refactor after you have written the same code twice and the tests pass.
+  - Follow CLEAN code principles here. It's ok to refactor the same code to match different patterns as the codebase evolves.
+  - Keep functions/methods small, only a few lines of code, the idea being that we need to trust the function/method names and not be conserned with the implementation details.
+  - When the implementation is done, move the production code to its proper file and location.
+
 
 ### Why This is Critical for Agents
 
 - Instant Verification: Frequent test runs (every 30–60 seconds) mean debugging is nearly eliminated because the bug must be in the handful of lines written since the last pass.
 - Confidence to Release: A comprehensive suite of "cannot fail" tests allows for rapid iteration and deployment with total confidence in system stability.
 - Prevention of Rot: Slow feedback loops lead to developer fatigue and code rot. Keeping tests fast and the cycle tight ensures the cost of refactoring remains low.
+
+## Commit Message Convention
+
+Commit messages must follow semver intent for CI/CD:
+
+- `patch: {detailed description of changes}` for immaterial behavior changes
+- `minor: {detailed description of changes}` for new features
+- `major: {detailed description of changes}` for breaking changes

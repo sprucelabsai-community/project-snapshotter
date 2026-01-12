@@ -1,6 +1,6 @@
 import 'dotenv/config'
 import path from 'path'
-import { openDb } from './db/index.js'
+import Database from './db/index.js'
 import RegressionProofApi from './RegressionProofApi.js'
 import { InvitesStore } from './stores/index.js'
 
@@ -17,7 +17,7 @@ if (!GITEA_ADMIN_PASSWORD) {
     process.exit(1)
 }
 
-const db = openDb(API_DB_PATH)
+const db = new Database(API_DB_PATH)
 const invitesStore = new InvitesStore(db)
 
 const api = new RegressionProofApi({

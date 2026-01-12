@@ -5,7 +5,11 @@ import AbstractSpruceTest, {
     errorAssert,
     generateId,
 } from '@sprucelabs/test-utils'
-import { RegressionProofApi } from '@regressionproof/api'
+import {
+    RegressionProofApi,
+    Database,
+    InvitesStore,
+} from '@regressionproof/api'
 import RegressionProofClient, {
     ProjectCredentials,
 } from '@regressionproof/client'
@@ -21,6 +25,7 @@ export default class RegisteringProjectsTest extends AbstractSpruceTest {
             giteaUrl: process.env.GITEA_URL!,
             giteaAdminUser: process.env.GITEA_ADMIN_USER!,
             giteaAdminPassword: process.env.GITEA_ADMIN_PASSWORD!,
+            invitesStore: this.createInvitesStore(),
         })
         await this.api.start()
     }
@@ -223,10 +228,19 @@ export default class RegisteringProjectsTest extends AbstractSpruceTest {
             giteaAdminPassword:
                 options?.giteaAdminPassword ??
                 process.env.GITEA_ADMIN_PASSWORD!,
+            invitesStore: this.createInvitesStore(),
         })
     }
 
     private Client(api: RegressionProofApi): RegressionProofClient {
         return new RegressionProofClient(`http://localhost:${api.getPort()}`)
+    }
+
+    private static createInvitesStore(): InvitesStore {
+        return new InvitesStore(new Database(':memory:'))
+    }
+
+    private createInvitesStore(): InvitesStore {
+        return RegisteringProjectsTest.createInvitesStore()
     }
 }

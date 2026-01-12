@@ -1,6 +1,3 @@
-import client from '@regressionproof/client'
-
-const RegressionProofClient = client.default ?? client
 const API_URL =
     process.env.REGRESSIONPROOF_API_URL ?? 'https://api.regressionproof.ai'
 
