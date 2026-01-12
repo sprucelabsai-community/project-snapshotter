@@ -12,6 +12,50 @@ On a fresh EC2 instance, you can run the bootstrap script:
 curl -fsSL https://raw.githubusercontent.com/sprucelabsai-community/regressionproof/master/scripts/deploy-ec2.sh | bash
 ```
 
+## Current Status (Flexible SSL)
+
+Use this checklist if you’re deploying with Cloudflare **Flexible** mode.
+
+1. **Cloudflare settings**:
+   - DNS: `api` + `git` **A records** pointing to the EC2 public IP.
+   - Proxy: **Proxied** (orange cloud).
+   - SSL/TLS mode: **Flexible**.
+2. **EC2 security group**:
+   - Allow **80 (HTTP)** and **22 (SSH)**. (443 optional in flexible mode.)
+3. **Reset the stack (optional)**:
+   - Wipes all containers, volumes, and Gitea data.
+   - Run by hash:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/sprucelabsai-community/regressionproof/4e2fee354ade8ea921679de54a7fc936d4d6c797/scripts/reset-ec2.sh | bash
+```
+
+4. **Deploy with interactive credentials**:
+   - The script prompts for Gitea admin credentials when run interactively.
+   - Run by hash (replace with latest hash when testing):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/sprucelabsai-community/regressionproof/b494f10bcdb5df1ef0bae6aeda47c0a91d90ada6/scripts/deploy-ec2.sh | bash -s -- --sslMode=flexible
+```
+
+5. **Verify containers**:
+
+```bash
+docker ps
+docker exec -it regressionproof-nginx curl -I http://gitea:3000
+docker exec -it regressionproof-nginx curl -I http://api:3000
+```
+
+6. **Finish Gitea setup**:
+   - Visit `https://git.regressionproof.ai` and complete the setup wizard.
+   - Use the username/password printed by the script.
+
+7. **Validate API**:
+   - `https://api.regressionproof.ai/check-name/test`
+
+If `curl -I http://localhost` on the EC2 host returns `502`, one of the
+upstreams (`api` or `gitea`) isn’t reachable on the Docker network.
+
 Before running the script, place your Cloudflare Origin Certificate at:
 
 ```
