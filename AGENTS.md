@@ -30,6 +30,7 @@ Commit messages must follow semver intent for CI/CD:
 - Never stop research based on initial findings.
 - Focus on holistic and detailed analysis: both wide (breadth) and deep (depth).
 - When scanning for documentation, check `docs/` in addition to root-level files.
+- Treat `docs/PROJECT.md` as critical project-specific instructions and read it early.
 - Any code/config changes, script edits, or stateful commands still require the full plan/approval workflow.
 
 ## Replanning Principles
