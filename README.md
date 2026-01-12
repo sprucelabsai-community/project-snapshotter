@@ -80,7 +80,7 @@ For contributors working on regressionproof itself.
 ### Prerequisites
 
 - Docker
-- Node.js 18+
+- Node.js 20+
 - Yarn
 
 ### Quick Start
