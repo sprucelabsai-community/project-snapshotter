@@ -6,5 +6,11 @@
     "skipped": [
       "tsconfig.json"
     ]
-  }
+  },
+  "skipped": [
+    "skill"
+  ],
+  "installed": [
+    "test"
+  ]
 }

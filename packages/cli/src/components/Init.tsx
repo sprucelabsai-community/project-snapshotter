@@ -1,14 +1,14 @@
+import { spawnSync } from 'node:child_process'
+import { existsSync, readFileSync } from 'node:fs'
 import client from '@regressionproof/client'
-const RegressionProofClient = client.default ?? client
 import { Box, Text, useApp } from 'ink'
 import BigText from 'ink-big-text'
 import TextInput from 'ink-text-input'
 import React from 'react'
-import { spawnSync } from 'node:child_process'
-import { existsSync, readFileSync } from 'node:fs'
 import ConfigManager, { Credentials } from '../config/ConfigManager.js'
 import JestConfigurator, { JestConfigResult } from '../jest/JestConfigurator.js'
 import { getRepoNameFromGit, toSlug } from '../utilities/slug.js'
+const RegressionProofClient = client.default ?? client
 
 const API_URL =
     process.env.REGRESSIONPROOF_API_URL ?? 'https://api.regressionproof.ai'
@@ -151,8 +151,7 @@ class InitComponent extends React.Component<Props, State> {
             this.setState({
                 step: 'error',
                 errorMessage:
-                    installResult.message ??
-                    'Failed to install dependencies.',
+                    installResult.message ?? 'Failed to install dependencies.',
             })
             return
         }
@@ -180,9 +179,7 @@ class InitComponent extends React.Component<Props, State> {
         }
 
         try {
-            packageJson = JSON.parse(
-                readFileSync('package.json', 'utf8')
-            ) as {
+            packageJson = JSON.parse(readFileSync('package.json', 'utf8')) as {
                 dependencies?: Record<string, string>
                 devDependencies?: Record<string, string>
             }
@@ -196,9 +193,7 @@ class InitComponent extends React.Component<Props, State> {
 
         const hasReporter = Boolean(
             packageJson.dependencies?.['@regressionproof/jest-reporter'] ??
-                packageJson.devDependencies?.[
-                    '@regressionproof/jest-reporter'
-                ]
+            packageJson.devDependencies?.['@regressionproof/jest-reporter']
         )
         if (hasReporter) {
             return { success: true }
@@ -400,7 +395,9 @@ class InitComponent extends React.Component<Props, State> {
     }
 }
 
-export default function Init(props: { projectName?: string }): React.ReactElement {
+export default function Init(props: {
+    projectName?: string
+}): React.ReactElement {
     const { exit } = useApp()
     return <InitComponent exit={exit} projectName={props.projectName} />
 }
