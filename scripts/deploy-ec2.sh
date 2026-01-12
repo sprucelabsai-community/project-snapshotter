@@ -2,13 +2,13 @@
 
 set -euo pipefail
 
-SCRIPT_VERSION="0.2.1"
+SCRIPT_VERSION="0.2.2"
 LAST_CHANGES=(
+    "Handle missing yarn.lock during API image build"
     "Add sudo fallback when Docker permissions are missing"
     "Support flexible/strict SSL modes via --sslMode"
     "Add regressionproof.ai banner with version"
     "Require Cloudflare origin certs in strict mode"
-    "Build API from source with Dockerfile"
 )
 REPO_URL="${REPO_URL:-https://github.com/sprucelabsai-community/regressionproof.git}"
 ROOT_DIR="${ROOT_DIR:-$HOME/regressionproof}"

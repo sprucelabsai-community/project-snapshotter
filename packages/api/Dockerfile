@@ -2,10 +2,11 @@ FROM node:18-bullseye-slim AS build
 
 WORKDIR /app
 
-COPY package.json yarn.lock lerna.json tsconfig.base.json ./
+COPY package.json lerna.json tsconfig.base.json ./
 COPY packages ./packages
 
-RUN yarn install --frozen-lockfile
+RUN corepack enable
+RUN yarn install --non-interactive
 RUN yarn workspace @regressionproof/api build.tsc
 RUN yarn workspace @regressionproof/api build.resolve-paths
 
