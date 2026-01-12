@@ -22,6 +22,14 @@ Commit messages must follow semver intent for CI/CD:
 - Each step is proposed, approved, then executed before moving on.
 - If scope changes mid-stream, update the plan with a brief reason before proceeding.
 
+## Research Principles
+
+- Research (reading files, scanning logs, running read-only commands) can proceed without a formal plan or step approvals.
+- Always complete research before making suggestions.
+- Never stop research based on initial findings.
+- Focus on holistic and detailed analysis: both wide (breadth) and deep (depth).
+- Any code/config changes, script edits, or stateful commands still require the full plan/approval workflow.
+
 ## Replanning Principles
 
 - When plans change, reprint the full plan with status markers.
