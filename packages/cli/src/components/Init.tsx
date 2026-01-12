@@ -150,7 +150,9 @@ class InitComponent extends React.Component<Props, State> {
         if (!installResult.success) {
             this.setState({
                 step: 'error',
-                errorMessage: installResult.message,
+                errorMessage:
+                    installResult.message ??
+                    'Failed to install dependencies.',
             })
             return
         }
