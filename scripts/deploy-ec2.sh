@@ -2,13 +2,13 @@
 
 set -euo pipefail
 
-SCRIPT_VERSION="0.2.8"
+SCRIPT_VERSION="0.2.10"
 LAST_CHANGES=(
-    "Prompt for credentials even when piped via curl"
-    "Prompt for Gitea admin credentials when missing"
-    "Generate and export Gitea admin credentials"
-    "Install rsync in API Docker build stage"
-    "Use Node 22 base image for API build"
+    "Persist Gitea admin credentials to env file for API"
+    "Verify API and Gitea reachability after deploy"
+    "Summarize container status at the end"
+    "Prompt for Gitea admin credentials before compose"
+    "Remove obsolete compose version field"
 )
 REPO_URL="${REPO_URL:-https://github.com/sprucelabsai-community/regressionproof.git}"
 ROOT_DIR="${ROOT_DIR:-$HOME/regressionproof}"
@@ -125,6 +125,43 @@ fi
 
 mkdir -p "$ROOT_DIR/nginx/certs"
 
+generate_password() {
+    if command -v openssl >/dev/null 2>&1; then
+        openssl rand -hex 16
+    else
+        date +%s | sha256sum | head -c 32
+    fi
+}
+
+if [ -z "$GITEA_ADMIN_PASSWORD" ]; then
+    if [ -t 0 ] || [ -t 1 ]; then
+        prompt_device="/dev/tty"
+        if [ ! -r "$prompt_device" ]; then
+            prompt_device="/dev/stdin"
+        fi
+
+        echo "Gitea admin credentials"
+        read -r -p "Admin username [${GITEA_ADMIN_USER}]: " input_user < "$prompt_device"
+        if [ -n "$input_user" ]; then
+            GITEA_ADMIN_USER="$input_user"
+        fi
+        read -r -s -p "Admin password (leave blank to auto-generate): " input_pass < "$prompt_device"
+        echo ""
+        if [ -n "$input_pass" ]; then
+            GITEA_ADMIN_PASSWORD="$input_pass"
+        else
+            GITEA_ADMIN_PASSWORD="$(generate_password)"
+        fi
+    else
+        GITEA_ADMIN_PASSWORD="$(generate_password)"
+    fi
+fi
+
+cat > "$ROOT_DIR/.regressionproof.env" <<EOF
+GITEA_ADMIN_USER=${GITEA_ADMIN_USER}
+GITEA_ADMIN_PASSWORD=${GITEA_ADMIN_PASSWORD}
+EOF
+
 if [ "$SSL_MODE" = "strict" ]; then
     cat > "$ROOT_DIR/nginx/nginx.conf" <<EOF
 events {}
@@ -231,8 +268,8 @@ services:
       - NODE_ENV=production
       - GITEA_URL=http://gitea:3000
       - API_PORT=3000
-      - GITEA_ADMIN_USER=${GITEA_ADMIN_USER}
-      - GITEA_ADMIN_PASSWORD=${GITEA_ADMIN_PASSWORD}
+    env_file:
+      - ./.regressionproof.env
     depends_on:
       - gitea
     networks:
@@ -300,6 +337,36 @@ if ! run_compose; then
     echo "  newgrp docker"
 fi
 
+echo ""
+echo "Container status:"
+docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+
+check_service() {
+    local name="$1"
+    local url="$2"
+    local code
+
+    if ! docker ps --format '{{.Names}}' | grep -q "^regressionproof-nginx$"; then
+        echo "${name}: SKIP (nginx not running)"
+        return
+    fi
+
+    code="$(docker exec regressionproof-nginx curl -s -o /dev/null -w "%{http_code}" "$url" || true)"
+    case "$code" in
+        200|301|302|405)
+            echo "${name}: OK (${code})"
+            ;;
+        *)
+            echo "${name}: FAIL (${code})"
+            ;;
+    esac
+}
+
+echo ""
+echo "Service checks:"
+check_service "Gitea" "http://gitea:3000"
+check_service "API" "http://api:3000/check-name/test"
+
 echo "Deployment complete."
 if [ "$SSL_MODE" = "strict" ]; then
     echo "API: https://${API_DOMAIN}"
@@ -311,34 +378,3 @@ fi
 echo "Gitea admin user: ${GITEA_ADMIN_USER}"
 echo "Gitea admin password: ${GITEA_ADMIN_PASSWORD}"
 echo "If this is your first run, log out and back in to use Docker without sudo."
-generate_password() {
-    if command -v openssl >/dev/null 2>&1; then
-        openssl rand -hex 16
-    else
-        date +%s | sha256sum | head -c 32
-    fi
-}
-
-if [ -z "$GITEA_ADMIN_PASSWORD" ]; then
-    if [ -t 0 ] || [ -t 1 ]; then
-        prompt_device="/dev/tty"
-        if [ ! -r "$prompt_device" ]; then
-            prompt_device="/dev/stdin"
-        fi
-
-        echo "Gitea admin credentials"
-        read -r -p "Admin username [${GITEA_ADMIN_USER}]: " input_user < "$prompt_device"
-        if [ -n "$input_user" ]; then
-            GITEA_ADMIN_USER="$input_user"
-        fi
-        read -r -s -p "Admin password (leave blank to auto-generate): " input_pass < "$prompt_device"
-        echo ""
-        if [ -n "$input_pass" ]; then
-            GITEA_ADMIN_PASSWORD="$input_pass"
-        else
-            GITEA_ADMIN_PASSWORD="$(generate_password)"
-        fi
-    else
-        GITEA_ADMIN_PASSWORD="$(generate_password)"
-    fi
-fi
