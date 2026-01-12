@@ -18,20 +18,49 @@ class InitComponent extends React.Component<Props, State> {
 
     public constructor(props: Props) {
         super(props)
-        this.state = {
-            name: getRepoNameFromGit(),
-            step: 'input',
-            availability: 'idle',
-            errorMessage: '',
-            credentials: null,
-            jestConfig: null,
-        }
-        this.apiClient = new RegressionProofClient(API_URL)
+
+        const providedName = props.projectName
+        const defaultName = providedName ?? getRepoNameFromGit()
+
         this.configManager = new ConfigManager()
+        this.apiClient = new RegressionProofClient(API_URL)
+
+        // Check if already registered (idempotent)
+        const existingCreds = this.configManager.loadCredentials(defaultName)
+        if (existingCreds) {
+            this.state = {
+                name: defaultName,
+                step: 'success',
+                availability: 'available',
+                errorMessage: '',
+                credentials: existingCreds,
+                jestConfig: null,
+            }
+        } else {
+            this.state = {
+                name: defaultName,
+                step: providedName ? 'registering' : 'input',
+                availability: 'idle',
+                errorMessage: '',
+                credentials: null,
+                jestConfig: null,
+            }
+        }
     }
 
     public componentDidMount(): void {
-        void this.checkAvailability()
+        // If we have a provided name and not already registered, start registration
+        if (this.props.projectName && this.state.step === 'registering') {
+            void this.register()
+        } else if (this.state.step === 'success') {
+            // Already registered, configure Jest and exit
+            const jestConfigurator = new JestConfigurator()
+            const jestConfig = jestConfigurator.configure()
+            this.setState({ jestConfig })
+            setTimeout(() => this.props.exit(), 1000)
+        } else {
+            void this.checkAvailability()
+        }
     }
 
     public componentDidUpdate(_: Props, prevState: State): void {
@@ -97,6 +126,11 @@ class InitComponent extends React.Component<Props, State> {
         }
 
         this.setState({ step: 'registering' })
+        await this.register()
+    }
+
+    private async register(): Promise<void> {
+        const { name } = this.state
 
         try {
             const credentials = await this.apiClient.registerProject({ name })
@@ -218,7 +252,7 @@ class InitComponent extends React.Component<Props, State> {
         return (
             <Box flexDirection="column" padding={1}>
                 <BigText
-                    text="regressionproof"
+                    text="regressionproof.ai"
                     font="tiny"
                     colors={['magenta', 'cyan']}
                 />
@@ -263,9 +297,9 @@ class InitComponent extends React.Component<Props, State> {
     }
 }
 
-export default function Init(): React.ReactElement {
+export default function Init(props: { projectName?: string }): React.ReactElement {
     const { exit } = useApp()
-    return <InitComponent exit={exit} />
+    return <InitComponent exit={exit} projectName={props.projectName} />
 }
 
 type Step = 'input' | 'registering' | 'configuring' | 'success' | 'error'
@@ -273,6 +307,7 @@ type Availability = 'idle' | 'checking' | 'available' | 'taken' | 'error'
 
 interface Props {
     exit: () => void
+    projectName?: string
 }
 
 interface State {

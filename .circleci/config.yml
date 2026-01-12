@@ -1,0 +1,92 @@
+version: 2.1
+orbs:
+  spruce: sprucelabsai/orb@1
+jobs:
+  test:
+    docker:
+      - image: cimg/node:lts
+    working_directory: /mnt/ramdisk
+    steps:
+      - run:
+          name: Yolo perms
+          command: sudo chmod -R 777 /mnt/ramdisk
+      - add_ssh_keys:
+          fingerprints:
+            - "ec:9f:2e:aa:1f:c9:ab:49:57:8f:c0:cd:2e:5b:f3:b0"
+      - checkout
+      - spruce/check_and_skip_if_npm_publish
+      - spruce/install_rsync
+      - run: yarn install
+      - run: yarn clean
+      - run: yarn build.ci
+      - run:
+          name: "running tests"
+          no_output_timeout: 20m
+          command: yarn test
+      - spruce/exit_if_not_auto_upgrade
+      - spruce/merge_auto_upgrade
+  npm_publish:
+    docker:
+      - image: cimg/node:lts
+    working_directory: /mnt/ramdisk
+    steps:
+      - run:
+          name: Yolo perms
+          command: sudo chmod -R 777 /mnt/ramdisk
+      - add_ssh_keys:
+          fingerprints:
+            - "ec:9f:2e:aa:1f:c9:ab:49:57:8f:c0:cd:2e:5b:f3:b0"
+      - checkout
+      - spruce/check_and_skip_if_npm_publish
+      - spruce/install_rsync
+      - run: yarn install
+      - run: yarn build.dist
+      - run: git config --global user.email "$GIT_AUTHOR_EMAIL"
+      - run: git config --global user.name "$GIT_AUTHOR_NAME"
+      - run:
+          name: Authenticate with registry
+          command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
+      - run: 'npm run publish -- --yes --force-publish --dist-tag latest --message "chore(release): %v [npm-publish]"'
+  upgrade:
+    docker:
+      - image: cimg/node:lts
+    steps:
+      - run:
+          name: Yolo perms
+          command: sudo chmod -R 777 /mnt/ramdisk
+      - spruce/check_for_autoupgrade_dns
+      - add_ssh_keys:
+          fingerprints:
+            - "ec:9f:2e:aa:1f:c9:ab:49:57:8f:c0:cd:2e:5b:f3:b0"
+      - spruce/check_for_ssh_keys_env
+      - spruce/setup_ct_npm_cache
+      - checkout
+      - spruce/set_target_branch_env
+      - spruce/install_rsync
+      - spruce/install_cli
+      - run: yarn install
+      - spruce/workspace_upgrade_check_for_major
+      - spruce/check_for_newline_only_diff
+      - spruce/create_pr
+workflows:
+  version: 2.1
+  do_build:
+    jobs:
+      - test:
+          context: public_package_publish
+      - npm_publish:
+          requires:
+            - test
+          context: public_package_publish
+          filters:
+            branches:
+              only:
+                - master
+  upgrade:
+    jobs:
+      - upgrade:
+          context: public_package_publish
+          filters:
+            branches:
+              only:
+                - never_run_only_for_cron

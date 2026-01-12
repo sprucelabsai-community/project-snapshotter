@@ -104,12 +104,7 @@ Developer's machine                Our infrastructure
 
 **Note:** This library only handles snapshotting and pushing. The CLI handles registration and the reporter handles triggering snapshots.
 
-**Local Development:**
-```bash
-# Boot local Gitea for testing
-./boot-git.sh
-# Opens at http://localhost:3333
-```
+**Local Development:** See [Local Development](#local-development) section for setup instructions.
 
 ### Test Results Format
 
@@ -270,23 +265,105 @@ The developer is ultimately responsible for:
 - Not hardcoding secrets in source files
 - Reviewing what gets captured if working with sensitive data
 
-## Next Steps / Open Questions
+## Local Development
+
+### Prerequisites
+
+- Docker running
+- Node.js 18+
+- Yarn
+
+### Scripts
+
+| Script | Description |
+|--------|-------------|
+| `yarn dev` | Boot Gitea + API (for developing on regressionproof) |
+| `yarn setup.e2e` | Build + Gitea + link packages + API (for testing in other projects) |
+| `yarn build` | Build all packages |
+| `yarn test` | Run all tests |
+| `yarn watch` | Watch mode for all packages |
+
+### E2E Testing with Local Projects
+
+To test regressionproof against your own local projects:
+
+**Terminal 1** (this repo):
+```bash
+yarn setup.e2e
+# Builds, boots Gitea, links packages, starts API
+# Leave running - Ctrl+C to stop
+```
+
+**Terminal 2** (your test project):
+```bash
+yarn link @regressionproof/cli @regressionproof/jest-reporter
+printf '\nREGRESSIONPROOF_API_URL=http://localhost:3000\n' >> .env
+node node_modules/@regressionproof/cli/build/cli.js init
+yarn test
+```
+
+Then check http://localhost:3333 for your snapshot.
+
+**Credentials:** admin / devpassword123
+
+### Script Details
+
+- **`scripts/boot-infra.sh`** - Boots Gitea container, creates admin user, writes .env files
+- **`scripts/boot-api.sh`** - Calls boot-infra.sh + starts API
+- **`scripts/e2e-setup.sh`** - Build + boot-infra + yarn link + starts API
+
+All scripts are reentrant (safe to run multiple times). Ctrl+C to stop.
+
+### Environment Variables
+
+Override defaults by setting these before running scripts:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `GITEA_PORT` | `3333` | Gitea HTTP port |
+| `API_PORT` | `3000` | API server port |
+| `ADMIN_USER` | `admin` | Gitea admin username |
+| `ADMIN_PASSWORD` | `devpassword123` | Gitea admin password |
+| `CONTAINER_NAME` | `regressionproof-gitea-dev` | Docker container name |
+
+Example:
+```bash
+GITEA_PORT=4000 API_PORT=4001 yarn setup.e2e
+```
+
+### Stopping Gitea
+
+```bash
+docker stop regressionproof-gitea-dev
+
+# Full cleanup (removes data)
+docker rm regressionproof-gitea-dev
+```
+
+## Implementation Status
+
+All core packages are complete and tested.
+
+### Progress Tracker
+
+- [x] `@regressionproof/snapshotter` - Core snapshot library
+- [x] `@regressionproof/api` - Project registration API
+- [x] `@regressionproof/client` - API client
+- [x] `@regressionproof/cli` - CLI with full init flow
+- [x] `@regressionproof/jest-reporter` - Jest integration
 
 ### Jest Reporter (`@regressionproof/jest-reporter`)
 
-**Status:** Package scaffolded with reporter skeleton
+**Status:** Complete
 
-**Done:**
 - [x] Package setup (ESM, workspace integrated)
 - [x] Reporter class with Jest hooks (`onRunStart`, `onTestStart`, `onRunComplete`)
+- [x] Transform Jest `AggregatedResult` → our `TestResults` format
+- [x] Load config from `.regressionproof.json` or git remote
+- [x] Call snapshotter in `onRunComplete`
+- [x] Graceful error handling (logs instead of crashing test runs)
 
-**TODO:**
-- [ ] Transform Jest `AggregatedResult` → our `TestResults` format
-- [ ] Load config from `.regressionproof.json`
-- [ ] Call snapshotter in `onRunComplete`
-- [ ] Graceful error handling (don't crash test runs)
-
-**Usage (once complete):**
+**Usage:**
 ```javascript
 // jest.config.js
 module.exports = {
@@ -296,11 +373,12 @@ module.exports = {
 
 ### CLI Init Flow
 
-The `regressionproof init` command needs to:
+**Status:** Complete
 
-1. **Register project** - Call API to create repo and get credentials (partially done - name checking works)
-2. **Store credentials** - Save to `~/.regressionproof/<project-hash>/config.json`
-3. **Auto-configure Jest** - Add reporter to `package.json` or `jest.config.ts`
+The `regressionproof init` command:
+1. **Registers project** - Calls API to create Gitea repo and get credentials
+2. **Stores credentials** - Saves to `~/.regressionproof/<project-name>/config.json`
+3. **Auto-configures Jest** - Adds reporter to `package.json`, `jest.config.ts`, or `jest.config.js`
 
 ### Config & Mirror Location
 
@@ -308,7 +386,7 @@ All RegressionProof data lives in the user's home directory:
 
 ```
 ~/.regressionproof/
-  <project-hash>/
+  <project-name>/
     config.json    # credentials + settings
     mirror/        # git mirror (isolated repo)
 ```
@@ -330,20 +408,16 @@ All RegressionProof data lives in the user's home directory:
 }
 ```
 
-**Project hash:** Based on project path or git remote URL (TBD)
+### Architecture Decisions
 
-### Decisions
+- **Config/mirror in home directory** - `~/.regressionproof/<project-name>/` keeps project clean, survives clones, avoids credential leaks
+- **Auto-modify jest config** - `regressionproof init` automatically adds the reporter (tries package.json first, then jest.config.ts/js)
+- **Project name from git remote** - Extracts repo name from `git remote get-url origin`, converts to slug
 
-- **Config/mirror in home directory** - `~/.regressionproof/<project-hash>/` keeps project clean, survives clones, avoids credential leaks
-- **Auto-modify jest config** - `regressionproof init` will automatically add the reporter:
-  1. Check `package.json` for `jest.reporters` first (Spruce CLI style)
-  2. Fallback to `jest.config.ts`
-- **Jest-only for now** - Ship Jest reporter first, but future vision includes other test frameworks (Vitest, Mocha) and other languages
+## Next Steps / Future Work
 
-### Progress Tracker
-
-- [x] `@regressionproof/snapshotter` - Core snapshot library
-- [x] `@regressionproof/api` - Project registration API
-- [x] `@regressionproof/client` - API client
-- [x] `@regressionproof/cli` - CLI (init partially done)
-- [ ] `@regressionproof/jest-reporter` - Jest integration (in progress)
+- [ ] **Vitest reporter** - Expand to other test frameworks
+- [ ] **Mocha reporter** - Additional framework support
+- [ ] **Other languages** - Python, Go, etc.
+- [ ] **Dashboard/analytics** - Visualize TDD progression data
+- [ ] **Training data extraction** - Tools to process git history into LLM training format
