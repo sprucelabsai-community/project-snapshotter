@@ -1,4 +1,4 @@
-import { SpruceError } from '@regressionproof/api'
+import SpruceError from './errors/SpruceError'
 
 export default class RegressionProofClient {
     private baseUrl: string
@@ -57,12 +57,12 @@ export default class RegressionProofClient {
             }
             return new SpruceError({
                 code: 'GIT_SERVER_ERROR',
-                message: `Request failed: ${response.statusText}`,
+                statusText: `${response.statusText}`,
             })
         } catch {
             return new SpruceError({
                 code: 'GIT_SERVER_ERROR',
-                message: `Request failed: ${response.statusText}`,
+                statusText: `${response.statusText}`,
             })
         }
     }
