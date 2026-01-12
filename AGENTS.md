@@ -20,6 +20,7 @@ Commit messages must follow semver intent for CI/CD:
 - Plans describe discrete, concrete mutations to code/config.
 - One step maps to one conceptual change set; split unrelated changes.
 - Each step is proposed, approved, then executed before moving on.
+- Each step must explicitly list the concrete file changes (add/remove/modify) it will make.
 - If scope changes mid-stream, update the plan with a brief reason before proceeding.
 
 ## Research Principles
@@ -28,6 +29,7 @@ Commit messages must follow semver intent for CI/CD:
 - Always complete research before making suggestions.
 - Never stop research based on initial findings.
 - Focus on holistic and detailed analysis: both wide (breadth) and deep (depth).
+- When scanning for documentation, check `docs/` in addition to root-level files.
 - Any code/config changes, script edits, or stateful commands still require the full plan/approval workflow.
 
 ## Replanning Principles
