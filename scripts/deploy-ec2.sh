@@ -1,0 +1,158 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+REPO_URL="${REPO_URL:-https://github.com/sprucelabsai-community/regressionproof.git}"
+ROOT_DIR="${ROOT_DIR:-$HOME/regressionproof}"
+API_DOMAIN="${API_DOMAIN:-api.regressionproof.ai}"
+GIT_DOMAIN="${GIT_DOMAIN:-git.regressionproof.ai}"
+
+install_packages_apt() {
+    sudo apt update
+    sudo apt install -y git docker.io docker-compose-plugin
+    sudo systemctl enable --now docker
+}
+
+install_packages_yum() {
+    if command -v amazon-linux-extras >/dev/null 2>&1; then
+        sudo amazon-linux-extras install -y docker
+    else
+        sudo yum install -y docker
+    fi
+    sudo yum install -y git docker-compose-plugin || true
+    sudo systemctl enable --now docker
+}
+
+ensure_compose() {
+    if docker compose version >/dev/null 2>&1; then
+        return
+    fi
+
+    if command -v docker-compose >/dev/null 2>&1; then
+        return
+    fi
+
+    sudo curl -L "https://github.com/docker/compose/releases/download/v2.27.0/docker-compose-linux-x86_64" \
+        -o /usr/local/bin/docker-compose
+    sudo chmod +x /usr/local/bin/docker-compose
+}
+
+if ! command -v docker >/dev/null 2>&1; then
+    if command -v apt-get >/dev/null 2>&1; then
+        install_packages_apt
+    elif command -v yum >/dev/null 2>&1; then
+        install_packages_yum
+    else
+        echo "Unsupported OS. Install Docker, Git, and Compose manually."
+        exit 1
+    fi
+fi
+
+ensure_compose
+
+sudo usermod -aG docker "$USER" || true
+
+if [ ! -d "$ROOT_DIR/.git" ]; then
+    git clone "$REPO_URL" "$ROOT_DIR"
+else
+    git -C "$ROOT_DIR" pull
+fi
+
+mkdir -p "$ROOT_DIR/nginx"
+
+cat > "$ROOT_DIR/nginx/nginx.conf" <<EOF
+events {}
+
+http {
+  server {
+    listen 80;
+    server_name ${API_DOMAIN};
+    location / {
+      proxy_pass http://api:3000;
+      proxy_set_header Host \$host;
+      proxy_set_header X-Real-IP \$remote_addr;
+      proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+  }
+
+  server {
+    listen 80;
+    server_name ${GIT_DOMAIN};
+    location / {
+      proxy_pass http://gitea:3000;
+      proxy_set_header Host \$host;
+      proxy_set_header X-Real-IP \$remote_addr;
+      proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+  }
+}
+EOF
+
+cat > "$ROOT_DIR/docker-compose.yml" <<EOF
+version: "3.8"
+
+services:
+  gitea:
+    image: gitea/gitea:1.22
+    container_name: regressionproof-gitea
+    restart: unless-stopped
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+      - GITEA__server__ROOT_URL=https://${GIT_DOMAIN}
+      - GITEA__server__DOMAIN=${GIT_DOMAIN}
+      - GITEA__server__SSH_DOMAIN=${GIT_DOMAIN}
+    volumes:
+      - ./gitea:/data
+    networks:
+      - regressionproof
+
+  api:
+    build:
+      context: .
+      dockerfile: packages/api/Dockerfile
+    image: regressionproof-api:local
+    container_name: regressionproof-api
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - GITEA_URL=http://gitea:3000
+      - API_PORT=3000
+    depends_on:
+      - gitea
+    networks:
+      - regressionproof
+
+  nginx:
+    image: nginx:1.27
+    container_name: regressionproof-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - api
+      - gitea
+    networks:
+      - regressionproof
+
+networks:
+  regressionproof:
+    driver: bridge
+EOF
+
+cd "$ROOT_DIR"
+
+if docker compose version >/dev/null 2>&1; then
+    docker compose up -d --build
+else
+    docker-compose up -d --build
+fi
+
+echo "Deployment complete."
+echo "API: https://${API_DOMAIN}"
+echo "Gitea: https://${GIT_DOMAIN}"
+echo "If this is your first run, log out and back in to use Docker without sudo."

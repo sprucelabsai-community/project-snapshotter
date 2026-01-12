@@ -5,6 +5,22 @@ This guide deploys the API and Gitea on a single EC2 instance, exposed via
 
 ## Checklist
 
+### 0) One-Command Bootstrap (optional)
+On a fresh EC2 instance, you can run the bootstrap script:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/sprucelabsai-community/regressionproof/master/scripts/deploy-ec2.sh | bash
+```
+
+Set custom domains or repo URL:
+
+```bash
+API_DOMAIN=api.regressionproof.ai \
+GIT_DOMAIN=git.regressionproof.ai \
+REPO_URL=https://github.com/sprucelabsai-community/regressionproof.git \
+bash scripts/deploy-ec2.sh
+```
+
 ### 1) DNS (Cloudflare)
 - Create `api` and `git` records pointing to the EC2 public IP.
 - Proxy status: **Proxied** (orange cloud).
@@ -53,7 +69,10 @@ services:
       - regressionproof
 
   api:
-    image: ghcr.io/sprucelabsai-community/regressionproof-api:latest
+    build:
+      context: .
+      dockerfile: packages/api/Dockerfile
+    image: regressionproof-api:local
     container_name: regressionproof-api
     restart: unless-stopped
     environment:
@@ -71,7 +90,6 @@ services:
     restart: unless-stopped
     ports:
       - "80:80"
-      - "443:443"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/certs:/etc/nginx/certs:ro

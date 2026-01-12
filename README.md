@@ -118,3 +118,11 @@ Check http://localhost:3333 for snapshots (admin / devpassword123).
 | `API_PORT` | `3000` | API server port |
 | `ADMIN_USER` | `admin` | Gitea admin username |
 | `ADMIN_PASSWORD` | `devpassword123` | Gitea admin password |
+
+## Deploy (EC2)
+
+Bootstrap the API + Gitea stack on a fresh EC2 instance:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/sprucelabsai-community/regressionproof/master/scripts/deploy-ec2.sh | bash
+```
