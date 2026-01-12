@@ -1,5 +1,6 @@
 import Fastify, { FastifyInstance } from 'fastify'
 import ErrorOptions from '#spruce/errors/options.types'
+import SpruceError from './errors/SpruceError.js'
 
 export default class RegressionProofApi {
     private server: FastifyInstance
@@ -38,9 +39,10 @@ export default class RegressionProofApi {
                 const exists = await this.repoExists(name)
                 if (exists) {
                     void reply.status(409)
-                    return {
-                        error: { code: 'PROJECT_ALREADY_EXISTS', name },
-                    }
+                    return this.serializeError({
+                        code: 'PROJECT_ALREADY_EXISTS',
+                        name,
+                    })
                 }
 
                 await this.createRepo(name)
@@ -50,7 +52,7 @@ export default class RegressionProofApi {
                 return { url, token }
             } catch (err) {
                 void reply.status(502)
-                return { error: this.buildGitServerError(err) }
+                return this.serializeError(this.buildGitServerError(err))
             }
         })
 
@@ -61,9 +63,10 @@ export default class RegressionProofApi {
                 const exists = await this.repoExists(name)
                 if (!exists) {
                     void reply.status(404)
-                    return {
-                        error: { code: 'PROJECT_NOT_FOUND', name },
-                    }
+                    return this.serializeError({
+                        code: 'PROJECT_NOT_FOUND',
+                        name,
+                    })
                 }
 
                 const url = `${this.giteaUrl}/${this.giteaAdminUser}/${name}.git`
@@ -71,7 +74,7 @@ export default class RegressionProofApi {
                 return { url, token }
             } catch (err) {
                 void reply.status(502)
-                return { error: this.buildGitServerError(err) }
+                return this.serializeError(this.buildGitServerError(err))
             }
         })
     }
@@ -125,6 +128,13 @@ export default class RegressionProofApi {
             return { code: 'GIT_SERVER_UNAVAILABLE', url: this.giteaUrl }
         }
         return { code: 'GIT_SERVER_ERROR', message }
+    }
+
+    private serializeError(options: ErrorOptions): {
+        error: ReturnType<SpruceError['toObject']>
+    } {
+        const err = new SpruceError(options)
+        return { error: err.toObject() }
     }
 
     private async createGiteaToken(name: string): Promise<string> {

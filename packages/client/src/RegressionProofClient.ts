@@ -52,17 +52,20 @@ export default class RegressionProofClient {
     private async parseErrorResponse(response: Response): Promise<SpruceError> {
         try {
             const body = await response.json()
+            if (body.error?.options) {
+                return SpruceError.parse(body.error, SpruceError)
+            }
             if (body.error?.code) {
                 return new SpruceError(body.error)
             }
             return new SpruceError({
                 code: 'GIT_SERVER_ERROR',
-                statusText: `${response.statusText}`,
+                message: `${response.statusText}`,
             })
         } catch {
             return new SpruceError({
                 code: 'GIT_SERVER_ERROR',
-                statusText: `${response.statusText}`,
+                message: `${response.statusText}`,
             })
         }
     }
