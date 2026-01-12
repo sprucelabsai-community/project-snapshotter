@@ -55,7 +55,9 @@
     "testEnvironment": "node",
     "globalSetup": "<rootDir>/build/jest.setup.js",
     "globalTeardown": "<rootDir>/build/jest.teardown.js",
-    "setupFilesAfterEnv": ["<rootDir>/build/jest.setupAfterEnv.js"],
+    "setupFilesAfterEnv": [
+      "<rootDir>/build/jest.setupAfterEnv.js"
+    ],
     "testPathIgnorePatterns": [
       "<rootDir>/tmp/",
       "<rootDir>/src/",

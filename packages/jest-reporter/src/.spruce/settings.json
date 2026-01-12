@@ -7,5 +7,10 @@
   ],
   "installed": [
     "test"
-  ]
+  ],
+  "writer": {
+    "skipped": [
+      "tsconfig.json"
+    ]
+  }
 }

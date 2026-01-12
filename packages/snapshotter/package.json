@@ -44,11 +44,11 @@
   },
   "devDependencies": {
     "@sprucelabs/esm-postbuild": "^9.0.13",
-    "@sprucelabs/jest-json-reporter": "^10.0.17",
-    "@sprucelabs/resolve-path-aliases": "^4.0.12",
-    "@sprucelabs/test": "^11.0.5",
-    "@sprucelabs/test-utils": "^7.1.2",
-    "@types/node": "^25.0.3",
+    "@sprucelabs/jest-json-reporter": "^10.0.19",
+    "@sprucelabs/resolve-path-aliases": "^4.0.13",
+    "@sprucelabs/test": "^11.1.0",
+    "@sprucelabs/test-utils": "^7.2.3",
+    "@types/node": "^25.0.6",
     "chokidar-cli": "^3.0.0",
     "eslint": "^9.39.2",
     "eslint-config-spruce": "^11.2.26",
@@ -80,5 +80,6 @@
     "moduleNameMapper": {
       "^#spruce/(.*)$": "<rootDir>/build/.spruce/$1"
     }
-  }
+  },
+  "dependencies": {}
 }

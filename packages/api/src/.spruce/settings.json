@@ -8,5 +8,10 @@
   "installed": [
     "schema",
     "error"
-  ]
+  ],
+  "writer": {
+    "skipped": [
+      "tsconfig.json"
+    ]
+  }
 }
