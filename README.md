@@ -162,7 +162,7 @@ bash /tmp/reset-ec2.sh
 
 Create an invite (requires existing project token):
 ```bash
-regressionproof invite create <projectName> --note="optional note"
+regressionproof invite create [projectName] --note="optional note"
 ```
 
 Accept an invite:

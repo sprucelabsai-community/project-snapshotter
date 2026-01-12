@@ -9,6 +9,7 @@
 ## Invites (manual)
 
 - `regressionproof invite create` prints a token to share manually.
+- `invite create` defaults to the current git repo name when no project name is provided.
 - `regressionproof invite accept` prints the project URL and token for local storage.
 - Use `--help` for CLI usage details.
 

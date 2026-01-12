@@ -20,10 +20,6 @@ if (command === 'init') {
     if (subcommand === 'create') {
         const noteArg = process.argv.find((value) => value.startsWith('--note='))
         const note = noteArg ? noteArg.replace('--note=', '') : undefined
-        if (!arg) {
-            console.error('Usage: regressionproof invite create <projectName> [--note=...]')
-            process.exit(1)
-        }
         void createInvite(arg, note)
     } else if (subcommand === 'accept') {
         if (!arg) {
