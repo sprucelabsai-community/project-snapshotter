@@ -12,7 +12,7 @@ Add a manual invite flow for project access using a single shared environment, w
 
 - [x] Step 1: Introduce a minimal SQLite DB layer (raw SQL)
   - Files:
-    - Add `packages/api/src/db/index.ts` (open DB + bootstrap schema)
+    - Add `packages/api/src/db/Database.ts` (DB class + bootstrap schema)
     - Add `packages/api/src/db/types.ts` (shared DB/store types)
     - Modify `packages/api/package.json` (add SQLite dependency)
 
@@ -24,7 +24,7 @@ Add a manual invite flow for project access using a single shared environment, w
 - [x] Step 3: Wire DB + stores into the API + routes (invite creation requires Bearer project token)
   - Files:
     - Modify `packages/api/src/serve.ts` (open DB, construct stores, pass to API)
-    - Modify `packages/api/src/RegressionProofApi.ts` (accept stores, add `/invites` endpoints, verify Bearer token via Gitea)
+    - Modify `packages/api/src/RegressionProofApi.ts` (invitesStore required, add `/invites` endpoints, verify Bearer token via Gitea)
 
 - [x] Step 4: Persist the DB on EC2
   - Files:
@@ -44,4 +44,8 @@ Add a manual invite flow for project access using a single shared environment, w
     - Modify `docs/PROJECT.md` (manual copy/paste flow)
 
 ## Open Decisions
-- SQLite library: `better-sqlite3` vs `sqlite3`
+- SQLite library: `sqlite3`
+
+## Current Status Notes
+- Tests use `new Database(':memory:')` for in-memory invite storage.
+- API package exports `Database` and `InvitesStore` for test usage.
