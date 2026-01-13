@@ -8,7 +8,7 @@
   "types": "./build/index.d.ts",
   "sideEffects": false,
   "files": [
-    "build"
+    "build/**/*"
   ],
   "scripts": {
     "build.ci": "yarn run build.tsc && yarn run build.resolve-paths && yarn run lint",
