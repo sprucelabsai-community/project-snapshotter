@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.4.0](https://github.com/sprucelabsai-community/regressionproof/compare/v0.3.9...v0.4.0) (2026-01-13)
+
+
+### Breaking Changes
+
+* new handling of state and errors when running ([ec5cfad](https://github.com/sprucelabsai-community/regressionproof/commit/ec5cfad))
+
+
+
+
+
 ## [0.3.9](https://github.com/sprucelabsai-community/regressionproof/compare/v0.3.8...v0.3.9) (2026-01-13)
 
 **Note:** Version bump only for package regressionproof
