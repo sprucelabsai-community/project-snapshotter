@@ -429,9 +429,13 @@ EOF
     echo "Systemd unit installed and enabled: regressionproof.service"
 }
 
-read -r -p "Set up systemd to start RegressionProof on boot? (y/N): " enable_systemd
-if [ "${enable_systemd}" = "y" ] || [ "${enable_systemd}" = "Y" ]; then
-    setup_systemd
+if systemctl is-enabled regressionproof.service >/dev/null 2>&1; then
+    echo "Systemd already enabled: regressionproof.service"
+else
+    read -r -p "Set up systemd to start RegressionProof on boot? (y/N): " enable_systemd
+    if [ "${enable_systemd}" = "y" ] || [ "${enable_systemd}" = "Y" ]; then
+        setup_systemd
+    fi
 fi
 
 echo "Deployment complete."
