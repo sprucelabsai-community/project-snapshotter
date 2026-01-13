@@ -7,14 +7,21 @@ export default class RegressionProofApi {
     private server: FastifyInstance
     private port?: number
     private giteaUrl: string
+    private giteaPublicUrl: string
     private giteaAdminUser: string
     private giteaAdminPassword: string
     private invitesStore: InvitesStore
 
     public constructor(options: RegressionProofApiOptions) {
-        const { giteaUrl, giteaAdminUser, giteaAdminPassword, invitesStore } =
-            options
+        const {
+            giteaUrl,
+            giteaPublicUrl,
+            giteaAdminUser,
+            giteaAdminPassword,
+            invitesStore,
+        } = options
         this.giteaUrl = giteaUrl
+        this.giteaPublicUrl = giteaPublicUrl ?? giteaUrl
         this.giteaAdminUser = giteaAdminUser
         this.giteaAdminPassword = giteaAdminPassword
         this.invitesStore = invitesStore
@@ -50,7 +57,7 @@ export default class RegressionProofApi {
                 }
 
                 await this.createRepo(name)
-                const url = `${this.giteaUrl}/${this.giteaAdminUser}/${name}.git`
+                const url = `${this.giteaPublicUrl}/${this.giteaAdminUser}/${name}.git`
                 const token = await this.createGiteaToken(name)
 
                 return { url, token }
@@ -73,7 +80,7 @@ export default class RegressionProofApi {
                     })
                 }
 
-                const url = `${this.giteaUrl}/${this.giteaAdminUser}/${name}.git`
+                const url = `${this.giteaPublicUrl}/${this.giteaAdminUser}/${name}.git`
                 const token = await this.createGiteaToken(name)
                 return { url, token }
             } catch (err) {
@@ -130,7 +137,7 @@ export default class RegressionProofApi {
                     })
                 }
 
-                const url = `${this.giteaUrl}/${this.giteaAdminUser}/${projectName}.git`
+                const url = `${this.giteaPublicUrl}/${this.giteaAdminUser}/${projectName}.git`
                 const projectToken = await this.createGiteaToken(projectName)
                 return { url, token: projectToken }
             } catch (err) {
@@ -302,6 +309,7 @@ export default class RegressionProofApi {
 
 export interface RegressionProofApiOptions {
     giteaUrl: string
+    giteaPublicUrl?: string
     giteaAdminUser: string
     giteaAdminPassword: string
     invitesStore: InvitesStore
