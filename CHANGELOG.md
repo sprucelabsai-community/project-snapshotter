@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.5.0](https://github.com/sprucelabsai-community/regressionproof/compare/v0.4.1...v0.5.0) (2026-01-13)
+
+
+### Features
+
+* upgrade support ([ca7b9cb](https://github.com/sprucelabsai-community/regressionproof/commit/ca7b9cb))
+
+
+
+
+
 ## [0.4.1](https://github.com/sprucelabsai-community/regressionproof/compare/v0.4.0...v0.4.1) (2026-01-13)
 
 **Note:** Version bump only for package regressionproof
