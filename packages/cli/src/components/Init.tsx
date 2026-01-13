@@ -1,6 +1,6 @@
 import { spawnSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
-import { RegressionProofClient } from '@regressionproof/client'
+import RegressionProofClient from '@regressionproof/client'
 import { Box, Text, useApp } from 'ink'
 import BigText from 'ink-big-text'
 import TextInput from 'ink-text-input'
