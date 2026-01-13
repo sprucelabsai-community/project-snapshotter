@@ -3,6 +3,7 @@ import fs from 'fs'
 import path from 'path'
 import ConfigManager from '../../config/ConfigManager.js'
 import { toSlug } from '../../utilities/slug.js'
+import { getCliVersion } from '../../utilities/version.js'
 
 const API_URL =
     process.env.REGRESSIONPROOF_API_URL ?? 'https://api.regressionproof.ai'
@@ -49,7 +50,9 @@ function deriveProjectNameFromUrl(url: string): string {
 
 function writeLocalConfig(cwd: string, projectName: string, url: string): void {
     const configPath = path.join(cwd, '.regressionproof.json')
+    const version = getCliVersion()
     const payload = {
+        version,
         projectName,
         remote: {
             url,

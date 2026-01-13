@@ -4,7 +4,8 @@ import os from 'os'
 import path from 'path'
 
 export function loadConfig(cwd: string): ReporterConfig | null {
-    const projectName = detectProjectName(cwd)
+    const localConfig = readLocalConfig(cwd)
+    const projectName = localConfig?.projectName ?? getProjectNameFromGit(cwd)
     if (!projectName) {
         return null
     }
@@ -17,6 +18,17 @@ export function loadConfig(cwd: string): ReporterConfig | null {
     }
 
     const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'))
+    const reporterVersion = getReporterVersion()
+    const expectedLocalConfig: LocalConfig = {
+        version: reporterVersion,
+        projectName,
+        remote: {
+            url: config.remote.url,
+        },
+    }
+    if (shouldWriteLocalConfig(localConfig, expectedLocalConfig)) {
+        writeLocalConfig(cwd, expectedLocalConfig)
+    }
 
     return {
         projectName,
@@ -29,14 +41,9 @@ export function loadConfig(cwd: string): ReporterConfig | null {
 }
 
 export function detectProjectName(cwd: string): string | null {
-    const localConfigPath = path.join(cwd, '.regressionproof.json')
-    if (fs.existsSync(localConfigPath)) {
-        const localConfig = JSON.parse(
-            fs.readFileSync(localConfigPath, 'utf-8')
-        )
-        if (localConfig.projectName) {
-            return localConfig.projectName
-        }
+    const localConfig = readLocalConfig(cwd)
+    if (localConfig?.projectName) {
+        return localConfig.projectName
     }
 
     return getProjectNameFromGit(cwd)
@@ -66,11 +73,67 @@ function toSlug(input: string): string {
         .replace(/^-|-$/g, '')
 }
 
+function readLocalConfig(cwd: string): LocalConfig | null {
+    const localConfigPath = path.join(cwd, '.regressionproof.json')
+    if (!fs.existsSync(localConfigPath)) {
+        return null
+    }
+
+    try {
+        return JSON.parse(fs.readFileSync(localConfigPath, 'utf-8'))
+    } catch {
+        return null
+    }
+}
+
+function shouldWriteLocalConfig(
+    existing: LocalConfig | null,
+    expected: LocalConfig
+): boolean {
+    if (!existing) {
+        return true
+    }
+
+    return (
+        existing.version !== expected.version ||
+        existing.projectName !== expected.projectName ||
+        existing.remote?.url !== expected.remote.url
+    )
+}
+
+function writeLocalConfig(cwd: string, config: LocalConfig): void {
+    const localConfigPath = path.join(cwd, '.regressionproof.json')
+    fs.writeFileSync(localConfigPath, JSON.stringify(config, null, 2))
+}
+
+function getReporterVersion(): string {
+    const packagePath = path.join(__dirname, '../../package.json')
+    const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf-8')) as {
+        version?: string
+    }
+
+    if (!packageJson.version) {
+        throw new Error(
+            'Unable to determine reporter version from package.json'
+        )
+    }
+
+    return packageJson.version
+}
+
 export interface ReporterConfig {
     projectName: string
     mirrorPath: string
     remote: {
         url: string
         token: string
+    }
+}
+
+interface LocalConfig {
+    version: string
+    projectName: string
+    remote: {
+        url: string
     }
 }

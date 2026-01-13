@@ -10,6 +10,7 @@ import React from 'react'
 import ConfigManager, { Credentials } from '../config/ConfigManager.js'
 import JestConfigurator, { JestConfigResult } from '../jest/JestConfigurator.js'
 import { getRepoNameFromGit, toSlug } from '../utilities/slug.js'
+import { getCliVersion } from '../utilities/version.js'
 
 const API_URL =
     process.env.REGRESSIONPROOF_API_URL ?? 'https://api.regressionproof.ai'
@@ -229,7 +230,9 @@ class InitComponent extends React.Component<Props, State> {
 
     private writeLocalConfig(projectName: string, url: string): void {
         const configPath = path.join(process.cwd(), '.regressionproof.json')
+        const version = getCliVersion()
         const payload = {
+            version,
             projectName,
             remote: {
                 url,
