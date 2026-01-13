@@ -10,14 +10,7 @@ export default async function listInvites(projectName?: string): Promise<void> {
         throw new Error(`Invite list failed: ${response.status} ${text}`)
     }
 
-    const data = (await response.json()) as {
-        projectName: string
-        createdAt: string
-        usedAt?: string | null
-        revokedAt?: string | null
-        note?: string | null
-        status: 'active' | 'used' | 'revoked'
-    }[]
+    const data = (await response.json()) as InviteSummary[]
 
     if (data.length === 0) {
         console.log('No invites found.')
@@ -30,4 +23,13 @@ export default async function listInvites(projectName?: string): Promise<void> {
                 (invite.note ? ` | ${invite.note}` : '')
         )
     }
+}
+
+interface InviteSummary {
+    projectName: string
+    createdAt: string
+    usedAt?: string | null
+    revokedAt?: string | null
+    note?: string | null
+    status: 'active' | 'used' | 'revoked'
 }

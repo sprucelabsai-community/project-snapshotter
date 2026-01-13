@@ -31,13 +31,13 @@ export default class RegressionProofApi {
 
     private setupRoutes() {
         this.server.get('/check-name/:name', async (request) => {
-            const { name } = request.params as { name: string }
+            const { name } = request.params as CheckNameParams
             const exists = await this.repoExists(name)
             return { available: !exists }
         })
 
         this.server.post('/register', async (request, reply) => {
-            const { name } = request.body as { name: string }
+            const { name } = request.body as RegisterRequest
 
             if (!this.isValidSlug(name)) {
                 void reply.status(400)
@@ -68,7 +68,7 @@ export default class RegressionProofApi {
         })
 
         this.server.post('/refresh', async (request, reply) => {
-            const { name } = request.body as { name: string }
+            const { name } = request.body as RefreshRequest
 
             try {
                 const exists = await this.repoExists(name)
@@ -90,10 +90,7 @@ export default class RegressionProofApi {
         })
 
         this.server.post('/invites', async (request, reply) => {
-            const { name, note } = request.body as {
-                name: string
-                note?: string
-            }
+            const { name, note } = request.body as InviteCreateRequest
 
             if (!this.isValidSlug(name)) {
                 void reply.status(400)
@@ -123,7 +120,7 @@ export default class RegressionProofApi {
         })
 
         this.server.post('/invites/accept', async (request, reply) => {
-            const { token } = request.body as { token: string }
+            const { token } = request.body as InviteAcceptRequest
 
             try {
                 const { projectName } =
@@ -146,12 +143,12 @@ export default class RegressionProofApi {
         })
 
         this.server.get('/invites', async (request) => {
-            const { name } = request.query as { name?: string }
+            const { name } = request.query as InviteListQuery
             return this.invitesStore.listInvites(name)
         })
 
         this.server.delete('/invites/:token', async (request, reply) => {
-            const { token } = request.params as { token: string }
+            const { token } = request.params as InviteDeleteParams
             await this.invitesStore.revokeInvite(token)
             void reply.status(200)
             return { revoked: true }
@@ -313,4 +310,33 @@ export interface RegressionProofApiOptions {
     giteaAdminUser: string
     giteaAdminPassword: string
     invitesStore: InvitesStore
+}
+
+interface CheckNameParams {
+    name: string
+}
+
+interface RegisterRequest {
+    name: string
+}
+
+interface RefreshRequest {
+    name: string
+}
+
+interface InviteCreateRequest {
+    name: string
+    note?: string
+}
+
+interface InviteAcceptRequest {
+    token: string
+}
+
+interface InviteListQuery {
+    name?: string
+}
+
+interface InviteDeleteParams {
+    token: string
 }
