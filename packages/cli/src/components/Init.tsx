@@ -1,5 +1,6 @@
 import { spawnSync } from 'node:child_process'
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import path from 'node:path'
 import type { RegressionProofClient } from '@regressionproof/client'
 import { buildRegressionProofClient } from '@regressionproof/client'
 import { Box, Text, useApp } from 'ink'
@@ -135,6 +136,7 @@ class InitComponent extends React.Component<Props, State> {
             this.setState({ credentials })
 
             this.configManager.saveCredentials(name, credentials)
+            this.writeLocalConfig(name, credentials.url)
             await this.installAndConfigure()
         } catch (err) {
             this.setState({
@@ -223,6 +225,17 @@ class InitComponent extends React.Component<Props, State> {
         }
 
         return { success: true }
+    }
+
+    private writeLocalConfig(projectName: string, url: string): void {
+        const configPath = path.join(process.cwd(), '.regressionproof.json')
+        const payload = {
+            projectName,
+            remote: {
+                url,
+            },
+        }
+        writeFileSync(configPath, JSON.stringify(payload, null, 2))
     }
 
     private getPackageManager(): PackageManager {

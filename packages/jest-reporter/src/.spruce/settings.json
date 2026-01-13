@@ -6,7 +6,9 @@
     "skill"
   ],
   "installed": [
-    "test"
+    "test",
+    "schema",
+    "error"
   ],
   "writer": {
     "skipped": [

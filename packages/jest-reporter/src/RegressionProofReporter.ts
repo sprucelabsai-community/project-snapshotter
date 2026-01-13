@@ -7,7 +7,8 @@ import type {
     TestContext,
 } from '@jest/reporters'
 import { snapshot } from '@regressionproof/snapshotter'
-import { loadConfig } from './config/loadConfig.js'
+import { loadConfig, detectProjectName } from './config/loadConfig.js'
+import SpruceError from './errors/SpruceError.js'
 import { transformResults } from './transformers/transformResults.js'
 
 export default class RegressionProofReporter implements Reporter {
@@ -43,10 +44,13 @@ export default class RegressionProofReporter implements Reporter {
         }
 
         if (!config) {
-            console.log(
-                '[RegressionProof] No config found. Run `regressionproof init` to set up.'
-            )
-            return
+            const projectName = detectProjectName(this.cwd) ?? 'unknown'
+            throw new SpruceError({
+                code: 'PROJECT_NOT_INITIALIZED',
+                projectName,
+                friendlyMessage:
+                    'RegressionProof.ai not initialized. Ask the project owner for an invite token, then run `npx regressionproof invite accept <token>`.',
+            })
         }
 
         const testResults = transformResults(results, this.cwd)

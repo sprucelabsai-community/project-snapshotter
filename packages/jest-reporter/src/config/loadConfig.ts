@@ -28,7 +28,7 @@ export function loadConfig(cwd: string): ReporterConfig | null {
     }
 }
 
-function detectProjectName(cwd: string): string | null {
+export function detectProjectName(cwd: string): string | null {
     const localConfigPath = path.join(cwd, '.regressionproof.json')
     if (fs.existsSync(localConfigPath)) {
         const localConfig = JSON.parse(
