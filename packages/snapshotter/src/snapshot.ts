@@ -1,27 +1,51 @@
 import { mkdirSync, writeFileSync } from 'fs'
 import path from 'path'
+import { buildLog } from '@sprucelabs/spruce-skill-utils'
 import { gitCommit, gitPush } from './git.js'
 import { SnapshotOptions } from './snapshotter.types.js'
 import { syncFiles } from './sync.js'
 
-export async function snapshot(options: SnapshotOptions): Promise<boolean> {
-    const sourcePath = options.sourcePath ?? process.cwd()
-    const { mirrorPath, testResults, remote } = options
+class Snapshotter {
+    private log = buildLog('Snapshotter')
 
-    await syncFiles(sourcePath, mirrorPath)
+    public async snapshot(options: SnapshotOptions): Promise<boolean> {
+        const sourcePath = options.sourcePath ?? process.cwd()
+        const { mirrorPath, testResults, remote } = options
 
-    const snapshotterDir = path.join(mirrorPath, '.snapshotter')
-    mkdirSync(snapshotterDir, { recursive: true })
-    writeFileSync(
-        path.join(snapshotterDir, 'testResults.json'),
-        JSON.stringify(testResults, null, 2)
-    )
+        this.log.info('Starting snapshot', sourcePath, mirrorPath)
 
-    const committed = await gitCommit(mirrorPath)
+        try {
+            await syncFiles(sourcePath, mirrorPath)
+            this.log.info('Files synced', mirrorPath)
 
-    if (committed) {
-        await gitPush(mirrorPath, remote)
+            const snapshotterDir = path.join(mirrorPath, '.snapshotter')
+            mkdirSync(snapshotterDir, { recursive: true })
+            writeFileSync(
+                path.join(snapshotterDir, 'testResults.json'),
+                JSON.stringify(testResults, null, 2)
+            )
+            this.log.info('Test results saved', snapshotterDir)
+
+            const committed = await gitCommit(mirrorPath, this.log)
+
+            if (!committed) {
+                this.log.info('No changes to commit', mirrorPath)
+                return false
+            }
+
+            this.log.info('Commit created, pushing', remote.url)
+            await gitPush(mirrorPath, remote, this.log)
+            this.log.info('Push completed', remote.url)
+
+            return true
+        } catch (err) {
+            const message = err instanceof Error ? err.message : String(err)
+            this.log.error('Snapshot failed', message)
+            throw err
+        }
     }
+}
 
-    return committed
+export async function snapshot(options: SnapshotOptions): Promise<boolean> {
+    return new Snapshotter().snapshot(options)
 }
