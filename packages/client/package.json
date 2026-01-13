@@ -8,6 +8,9 @@
   "types": "./build/index.d.ts",
   "module": "./build/esm/index.js",
   "sideEffects": false,
+  "files": [
+    "build/**/*"
+  ],
   "exports": {
     ".": {
       "import": {
