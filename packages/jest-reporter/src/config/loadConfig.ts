@@ -2,6 +2,7 @@ import { execSync } from 'child_process'
 import fs from 'fs'
 import os from 'os'
 import path from 'path'
+import LocalConfigUpgrader, { LocalConfig } from './LocalConfigUpgrader.js'
 
 export function loadConfig(cwd: string): ReporterConfig | null {
     const localConfig = readLocalConfig(cwd)
@@ -26,8 +27,10 @@ export function loadConfig(cwd: string): ReporterConfig | null {
             url: config.remote.url,
         },
     }
-    if (shouldWriteLocalConfig(localConfig, expectedLocalConfig)) {
-        writeLocalConfig(cwd, expectedLocalConfig)
+    const upgrader = new LocalConfigUpgrader(reporterVersion)
+    const upgradeResult = upgrader.upgrade(localConfig, expectedLocalConfig)
+    if (upgradeResult.shouldWrite) {
+        writeLocalConfig(cwd, upgradeResult.config)
     }
 
     return {
@@ -86,21 +89,6 @@ function readLocalConfig(cwd: string): LocalConfig | null {
     }
 }
 
-function shouldWriteLocalConfig(
-    existing: LocalConfig | null,
-    expected: LocalConfig
-): boolean {
-    if (!existing) {
-        return true
-    }
-
-    return (
-        existing.version !== expected.version ||
-        existing.projectName !== expected.projectName ||
-        existing.remote?.url !== expected.remote.url
-    )
-}
-
 function writeLocalConfig(cwd: string, config: LocalConfig): void {
     const localConfigPath = path.join(cwd, '.regressionproof.json')
     fs.writeFileSync(localConfigPath, JSON.stringify(config, null, 2))
@@ -127,13 +115,5 @@ export interface ReporterConfig {
     remote: {
         url: string
         token: string
-    }
-}
-
-interface LocalConfig {
-    version: string
-    projectName: string
-    remote: {
-        url: string
     }
 }
