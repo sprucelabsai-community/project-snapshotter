@@ -22,7 +22,7 @@ class Snapshotter {
             mkdirSync(snapshotterDir, { recursive: true })
             writeFileSync(
                 path.join(snapshotterDir, 'testResults.json'),
-                JSON.stringify(testResults, null, 2)
+                JSON.stringify(sortTestResults(testResults), null, 2)
             )
             this.log.info('Test results saved', snapshotterDir)
 
@@ -48,4 +48,21 @@ class Snapshotter {
 
 export async function snapshot(options: SnapshotOptions): Promise<boolean> {
     return new Snapshotter().snapshot(options)
+}
+
+function sortTestResults(
+    testResults: SnapshotOptions['testResults']
+): SnapshotOptions['testResults'] {
+    const suites = [...testResults.suites].map((suite) => ({
+        ...suite,
+        tests: [...suite.tests].sort((left, right) =>
+            left.name.localeCompare(right.name)
+        ),
+    }))
+    suites.sort((left, right) => left.path.localeCompare(right.path))
+
+    return {
+        ...testResults,
+        suites,
+    }
 }
