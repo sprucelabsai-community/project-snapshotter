@@ -67,7 +67,10 @@ async function pullFromRemote(mirrorPath: string, log?: Log): Promise<void> {
     const remoteBranchExists = await checkRemoteBranchExists(mirrorPath, branch)
 
     if (remoteBranchExists) {
-        await execOrThrow(`git -C "${mirrorPath}" rebase origin/${branch}`, log)
+        await execOrThrow(
+            `git -C "${mirrorPath}" rebase -X theirs origin/${branch}`,
+            log
+        )
     }
 }
 
