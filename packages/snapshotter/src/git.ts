@@ -1,5 +1,5 @@
 import { exec } from 'child_process'
-import { existsSync } from 'fs'
+import { existsSync, unlinkSync } from 'fs'
 import path from 'path'
 import { promisify } from 'util'
 import { Log } from '@sprucelabs/spruce-skill-utils'
@@ -18,6 +18,8 @@ export async function gitCommit(
     if (!existsSync(gitDir)) {
         await execOrThrow(`git -C "${mirrorPath}" init`, log)
     }
+
+    cleanupGitLockFiles(mirrorPath, log)
 
     await execOrThrow(`git -C "${mirrorPath}" add -A`, log)
 
@@ -39,16 +41,18 @@ export async function gitPush(
     remote: RemoteOptions,
     log?: Log
 ): Promise<void> {
+    cleanupGitLockFiles(mirrorPath, log)
+
     const authedUrl = remote.url.replace('://', `://${remote.token}@`)
 
-    const originExists = await remoteExists(mirrorPath, 'origin')
-    if (originExists) {
-        await execOrThrow(
-            `git -C "${mirrorPath}" remote set-url origin "${authedUrl}"`
-        )
-    } else {
+    const currentUrl = await getRemoteUrl(mirrorPath, 'origin')
+    if (currentUrl === null) {
         await execOrThrow(
             `git -C "${mirrorPath}" remote add origin "${authedUrl}"`
+        )
+    } else if (currentUrl !== authedUrl) {
+        await execOrThrow(
+            `git -C "${mirrorPath}" remote set-url origin "${authedUrl}"`
         )
     }
 
@@ -88,16 +92,33 @@ async function checkRemoteBranchExists(
     }
 }
 
-async function remoteExists(
+async function getRemoteUrl(
     mirrorPath: string,
     remoteName: string
-): Promise<boolean> {
+): Promise<string | null> {
     try {
-        const { stdout } = await execAsync(`git -C "${mirrorPath}" remote`)
-        const remotes = stdout.trim().split('\n')
-        return remotes.includes(remoteName)
+        const { stdout } = await execAsync(
+            `git -C "${mirrorPath}" remote get-url ${remoteName}`
+        )
+        return stdout.trim()
     } catch {
-        return false
+        return null
+    }
+}
+
+function cleanupGitLockFiles(mirrorPath: string, log?: Log): void {
+    const lockFiles = ['config.lock', 'index.lock', 'HEAD.lock']
+
+    for (const lockFile of lockFiles) {
+        const lockPath = path.join(mirrorPath, '.git', lockFile)
+        if (existsSync(lockPath)) {
+            try {
+                unlinkSync(lockPath)
+                log?.info(`Removed stale lock file: ${lockFile}`)
+            } catch {
+                log?.warn?.(`Failed to remove lock file: ${lockFile}`)
+            }
+        }
     }
 }
 
