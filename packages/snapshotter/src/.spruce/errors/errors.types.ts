@@ -16,6 +16,8 @@ export declare namespace SpruceErrors.RegressionproofSnapshotter {
 			'stdout'?: string | undefined | null
 			
 			'stderr'?: string | undefined | null
+			
+			'version': string
 	}
 
 	export interface ExecCommandFailedSchema extends SpruceSchema.Schema {
@@ -38,6 +40,12 @@ export declare namespace SpruceErrors.RegressionproofSnapshotter {
 		            /** . */
 		            'stderr': {
 		                type: 'text',
+		                options: undefined
+		            },
+		            /** . */
+		            'version': {
+		                type: 'text',
+		                isRequired: true,
 		                options: undefined
 		            },
 		    }

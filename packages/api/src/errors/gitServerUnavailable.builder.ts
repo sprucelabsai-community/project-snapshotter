@@ -9,5 +9,9 @@ export default buildErrorSchema({
             label: 'Server URL',
             isRequired: true,
         },
+        version: {
+            type: 'text',
+            isRequired: true,
+        },
     },
 })

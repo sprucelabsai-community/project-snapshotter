@@ -12,6 +12,8 @@ export declare namespace SpruceErrors.RegressionproofJestReporter {
 		
 			
 			'projectName': string
+			
+			'version': string
 	}
 
 	export interface ProjectNotInitializedSchema extends SpruceSchema.Schema {
@@ -21,6 +23,12 @@ export declare namespace SpruceErrors.RegressionproofJestReporter {
 		    fields: {
 		            /** . */
 		            'projectName': {
+		                type: 'text',
+		                isRequired: true,
+		                options: undefined
+		            },
+		            /** . */
+		            'version': {
 		                type: 'text',
 		                isRequired: true,
 		                options: undefined

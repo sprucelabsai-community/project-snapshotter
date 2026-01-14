@@ -15,6 +15,12 @@ const gitServerErrorSchema: SpruceErrors.RegressionproofApi.GitServerErrorSchema
 	                isRequired: true,
 	                options: undefined
 	            },
+	            /** . */
+	            'version': {
+	                type: 'text',
+	                isRequired: true,
+	                options: undefined
+	            },
 	    }
 }
 

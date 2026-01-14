@@ -2,6 +2,7 @@ import Fastify, { FastifyInstance } from 'fastify'
 import ErrorOptions from '#spruce/errors/options.types'
 import SpruceError from './errors/SpruceError.js'
 import InvitesStore from './stores/InvitesStore.js'
+import { getPackageVersion } from './utilities/version.js'
 
 export default class RegressionProofApi {
     private server: FastifyInstance
@@ -53,6 +54,7 @@ export default class RegressionProofApi {
                     return this.serializeError({
                         code: 'PROJECT_ALREADY_EXISTS',
                         name,
+                        version: getPackageVersion(),
                     })
                 }
 
@@ -77,6 +79,7 @@ export default class RegressionProofApi {
                     return this.serializeError({
                         code: 'PROJECT_NOT_FOUND',
                         name,
+                        version: getPackageVersion(),
                     })
                 }
 
@@ -131,6 +134,7 @@ export default class RegressionProofApi {
                     return this.serializeError({
                         code: 'PROJECT_NOT_FOUND',
                         name: projectName,
+                        version: getPackageVersion(),
                     })
                 }
 
@@ -197,13 +201,18 @@ export default class RegressionProofApi {
 
     private buildGitServerError(err: unknown): ErrorOptions {
         const message = err instanceof Error ? err.message : String(err)
+        const version = getPackageVersion()
         if (
             message.includes('ECONNREFUSED') ||
             message.includes('fetch failed')
         ) {
-            return { code: 'GIT_SERVER_UNAVAILABLE', url: this.giteaUrl }
+            return {
+                code: 'GIT_SERVER_UNAVAILABLE',
+                url: this.giteaUrl,
+                version,
+            }
         }
-        return { code: 'GIT_SERVER_ERROR', message }
+        return { code: 'GIT_SERVER_ERROR', message, version }
     }
 
     private serializeError(options: ErrorOptions): {

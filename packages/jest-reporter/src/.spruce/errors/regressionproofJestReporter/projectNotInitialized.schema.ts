@@ -14,6 +14,12 @@ const projectNotInitializedSchema: SpruceErrors.RegressionproofJestReporter.Proj
 	                isRequired: true,
 	                options: undefined
 	            },
+	            /** . */
+	            'version': {
+	                type: 'text',
+	                isRequired: true,
+	                options: undefined
+	            },
 	    }
 }
 

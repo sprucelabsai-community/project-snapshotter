@@ -15,6 +15,12 @@ const gitServerUnavailableSchema: SpruceErrors.RegressionproofApi.GitServerUnava
 	                isRequired: true,
 	                options: undefined
 	            },
+	            /** . */
+	            'version': {
+	                type: 'text',
+	                isRequired: true,
+	                options: undefined
+	            },
 	    }
 }
 

@@ -9,5 +9,9 @@ export default buildErrorSchema({
             label: 'Project name',
             isRequired: true,
         },
+        version: {
+            type: 'text',
+            isRequired: true,
+        },
     },
 })

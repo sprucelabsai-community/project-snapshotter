@@ -15,5 +15,9 @@ export default buildErrorSchema({
         stderr: {
             type: 'text',
         },
+        version: {
+            type: 'text',
+            isRequired: true,
+        },
     },
 })

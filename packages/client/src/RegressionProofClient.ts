@@ -1,4 +1,5 @@
 import SpruceError from './errors/SpruceError'
+import { getPackageVersion } from './utilities/version.js'
 
 export default abstract class RegressionProofClient {
     public abstract checkNameAvailability(name: string): Promise<boolean>
@@ -25,11 +26,13 @@ export default abstract class RegressionProofClient {
             return new SpruceError({
                 code: 'GIT_SERVER_ERROR',
                 message: `${response.statusText}`,
+                version: getPackageVersion(),
             })
         } catch {
             return new SpruceError({
                 code: 'GIT_SERVER_ERROR',
                 message: `${response.statusText}`,
+                version: getPackageVersion(),
             })
         }
     }

@@ -15,6 +15,12 @@ const projectNotFoundSchema: SpruceErrors.RegressionproofApi.ProjectNotFoundSche
 	                isRequired: true,
 	                options: undefined
 	            },
+	            /** . */
+	            'version': {
+	                type: 'text',
+	                isRequired: true,
+	                options: undefined
+	            },
 	    }
 }
 

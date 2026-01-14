@@ -8,5 +8,9 @@ export default buildErrorSchema({
             type: 'text',
             isRequired: true,
         },
+        version: {
+            type: 'text',
+            isRequired: true,
+        },
     },
 })

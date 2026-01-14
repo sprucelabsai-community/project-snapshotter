@@ -31,6 +31,6 @@ export default class SpruceError extends BaseSpruceError<ErrorOptions> {
             ? options.friendlyMessage
             : message
 
-        return fullMessage
+        return `${fullMessage} (v${options.version})`
     }
 }

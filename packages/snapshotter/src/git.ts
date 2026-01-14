@@ -5,6 +5,7 @@ import { promisify } from 'util'
 import { Log } from '@sprucelabs/spruce-skill-utils'
 import SpruceError from './errors/SpruceError.js'
 import { RemoteOptions } from './snapshotter.types.js'
+import { getPackageVersion } from './utilities/version.js'
 
 const execAsync = promisify(exec)
 
@@ -51,12 +52,40 @@ export async function gitPush(
         )
     }
 
-    await execOrThrow(`git -C "${mirrorPath}" fetch origin`, log)
-    if (await hasRemoteHead(mirrorPath)) {
-        await execOrThrow(`git -C "${mirrorPath}" rebase origin/HEAD`, log)
-    }
-
+    await pullFromRemote(mirrorPath, log)
     await execOrThrow(`git -C "${mirrorPath}" push -u origin HEAD`, log)
+}
+
+async function pullFromRemote(mirrorPath: string, log?: Log): Promise<void> {
+    await execOrThrow(`git -C "${mirrorPath}" fetch origin`, log)
+
+    const branch = await getCurrentBranch(mirrorPath)
+    const remoteBranchExists = await checkRemoteBranchExists(mirrorPath, branch)
+
+    if (remoteBranchExists) {
+        await execOrThrow(`git -C "${mirrorPath}" rebase origin/${branch}`, log)
+    }
+}
+
+async function getCurrentBranch(mirrorPath: string): Promise<string> {
+    const { stdout } = await execAsync(
+        `git -C "${mirrorPath}" rev-parse --abbrev-ref HEAD`
+    )
+    return stdout.trim()
+}
+
+async function checkRemoteBranchExists(
+    mirrorPath: string,
+    branch: string
+): Promise<boolean> {
+    try {
+        const { stdout } = await execAsync(
+            `git -C "${mirrorPath}" ls-remote --heads origin ${branch}`
+        )
+        return stdout.trim().length > 0
+    } catch {
+        return false
+    }
 }
 
 async function remoteExists(
@@ -67,17 +96,6 @@ async function remoteExists(
         const { stdout } = await execAsync(`git -C "${mirrorPath}" remote`)
         const remotes = stdout.trim().split('\n')
         return remotes.includes(remoteName)
-    } catch {
-        return false
-    }
-}
-
-async function hasRemoteHead(mirrorPath: string): Promise<boolean> {
-    try {
-        await execAsync(
-            `git -C "${mirrorPath}" symbolic-ref -q refs/remotes/origin/HEAD`
-        )
-        return true
     } catch {
         return false
     }
@@ -99,6 +117,7 @@ async function execOrThrow(
             command,
             stdout,
             stderr,
+            version: getPackageVersion(),
         })
     }
 }

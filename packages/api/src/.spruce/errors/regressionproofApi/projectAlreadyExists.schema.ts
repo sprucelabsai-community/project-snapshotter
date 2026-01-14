@@ -15,6 +15,12 @@ const projectAlreadyExistsSchema: SpruceErrors.RegressionproofApi.ProjectAlready
 	                isRequired: true,
 	                options: undefined
 	            },
+	            /** . */
+	            'version': {
+	                type: 'text',
+	                isRequired: true,
+	                options: undefined
+	            },
 	    }
 }
 

@@ -15,6 +15,8 @@ export declare namespace SpruceErrors.RegressionproofApi {
 		
 			/** Project name. */
 			'name': string
+			
+			'version': string
 	}
 
 	export interface ProjectNotFoundSchema extends SpruceSchema.Schema {
@@ -25,6 +27,12 @@ export declare namespace SpruceErrors.RegressionproofApi {
 		            /** Project name. */
 		            'name': {
 		                label: 'Project name',
+		                type: 'text',
+		                isRequired: true,
+		                options: undefined
+		            },
+		            /** . */
+		            'version': {
 		                type: 'text',
 		                isRequired: true,
 		                options: undefined
@@ -44,6 +52,8 @@ export declare namespace SpruceErrors.RegressionproofApi {
 		
 			/** Project name. */
 			'name': string
+			
+			'version': string
 	}
 
 	export interface ProjectAlreadyExistsSchema extends SpruceSchema.Schema {
@@ -54,6 +64,12 @@ export declare namespace SpruceErrors.RegressionproofApi {
 		            /** Project name. */
 		            'name': {
 		                label: 'Project name',
+		                type: 'text',
+		                isRequired: true,
+		                options: undefined
+		            },
+		            /** . */
+		            'version': {
 		                type: 'text',
 		                isRequired: true,
 		                options: undefined
@@ -73,6 +89,8 @@ export declare namespace SpruceErrors.RegressionproofApi {
 		
 			/** Server URL. */
 			'url': string
+			
+			'version': string
 	}
 
 	export interface GitServerUnavailableSchema extends SpruceSchema.Schema {
@@ -83,6 +101,12 @@ export declare namespace SpruceErrors.RegressionproofApi {
 		            /** Server URL. */
 		            'url': {
 		                label: 'Server URL',
+		                type: 'text',
+		                isRequired: true,
+		                options: undefined
+		            },
+		            /** . */
+		            'version': {
 		                type: 'text',
 		                isRequired: true,
 		                options: undefined
@@ -102,6 +126,8 @@ export declare namespace SpruceErrors.RegressionproofApi {
 		
 			/** Error message. */
 			'message': string
+			
+			'version': string
 	}
 
 	export interface GitServerErrorSchema extends SpruceSchema.Schema {
@@ -112,6 +138,12 @@ export declare namespace SpruceErrors.RegressionproofApi {
 		            /** Error message. */
 		            'message': {
 		                label: 'Error message',
+		                type: 'text',
+		                isRequired: true,
+		                options: undefined
+		            },
+		            /** . */
+		            'version': {
 		                type: 'text',
 		                isRequired: true,
 		                options: undefined

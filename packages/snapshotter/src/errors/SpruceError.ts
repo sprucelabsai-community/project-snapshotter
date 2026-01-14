@@ -24,6 +24,6 @@ ${options.stderr ?? '<no stderr>'}`
             ? options.friendlyMessage
             : message
 
-        return fullMessage
+        return `${fullMessage} (v${options.version})`
     }
 }

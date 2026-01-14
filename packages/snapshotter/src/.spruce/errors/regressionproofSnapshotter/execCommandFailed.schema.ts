@@ -25,6 +25,12 @@ const execCommandFailedSchema: SpruceErrors.RegressionproofSnapshotter.ExecComma
 	                type: 'text',
 	                options: undefined
 	            },
+	            /** . */
+	            'version': {
+	                type: 'text',
+	                isRequired: true,
+	                options: undefined
+	            },
 	    }
 }
 

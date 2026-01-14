@@ -10,6 +10,7 @@ import { snapshot } from '@regressionproof/snapshotter'
 import { loadConfig, detectProjectName } from './config/loadConfig.js'
 import SpruceError from './errors/SpruceError.js'
 import { transformResults } from './transformers/transformResults.js'
+import { getPackageVersion } from './utilities/version.js'
 
 export default class RegressionProofReporter implements Reporter {
     private cwd: string
@@ -50,6 +51,7 @@ export default class RegressionProofReporter implements Reporter {
                 projectName,
                 friendlyMessage:
                     'RegressionProof.ai not initialized. Ask the project owner for an invite token, then run `npx regressionproof invite accept <token>`.',
+                version: getPackageVersion(),
             })
         }
 
