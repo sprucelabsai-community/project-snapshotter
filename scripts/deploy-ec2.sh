@@ -2,13 +2,13 @@
 
 set -euo pipefail
 
-SCRIPT_VERSION="0.2.13"
+SCRIPT_VERSION="0.2.14"
 LAST_CHANGES=(
+    "Disable public registration on Gitea for security"
     "Fix systemd unit to support docker-compose fallback"
     "Skip Gitea setup when env file exists"
     "Offer optional systemd boot setup"
     "Bind API to 0.0.0.0 via API_HOST"
-    "Pause for manual Gitea setup before starting API"
 )
 REPO_URL="${REPO_URL:-https://github.com/sprucelabsai-community/regressionproof.git}"
 ROOT_DIR="${ROOT_DIR:-$HOME/regressionproof}"
@@ -217,6 +217,8 @@ services:
       - GITEA__server__ROOT_URL=https://${GIT_DOMAIN}
       - GITEA__server__DOMAIN=${GIT_DOMAIN}
       - GITEA__server__SSH_DOMAIN=${GIT_DOMAIN}
+      - GITEA__service__DISABLE_REGISTRATION=true
+      - GITEA__service__REQUIRE_SIGNIN_VIEW=true
     volumes:
       - ./gitea:/data
     networks:
