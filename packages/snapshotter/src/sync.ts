@@ -26,7 +26,9 @@ export async function syncFiles(
     const excludes = DEFAULT_EXCLUDES.map((e) => `--exclude='${e}'`).join(' ')
 
     if (hasGitIgnore) {
-        const cmd = `cd "${sourcePath}" && git ls-files --cached --others --exclude-standard -z | rsync -av --ignore-missing-args --files-from=- --from0 ${excludes} . "${mirrorPath}/"`
+        // Filter through a file existence check to handle deleted files in git index
+        // This is more portable than --ignore-missing-args which isn't available on older rsync (macOS)
+        const cmd = `cd "${sourcePath}" && git ls-files --cached --others --exclude-standard -z | while IFS= read -r -d '' file; do [ -e "$file" ] && printf '%s\\0' "$file"; done | rsync -av --files-from=- --from0 ${excludes} . "${mirrorPath}/"`
         await execAsync(cmd)
     } else {
         const cmd = `rsync -av --delete ${excludes} "${sourcePath}/" "${mirrorPath}/"`
