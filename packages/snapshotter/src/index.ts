@@ -1,2 +1,2 @@
-export { snapshot } from './snapshot.js'
+export { snapshot, checkForPreviousSnapshotFailure } from './snapshot.js'
 export * from './snapshotter.types.js'

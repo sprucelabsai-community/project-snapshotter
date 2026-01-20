@@ -1,83 +1,61 @@
-import { mkdirSync, writeFileSync } from 'fs'
+import { spawn } from 'child_process'
+import {
+    existsSync,
+    mkdirSync,
+    readFileSync,
+    unlinkSync,
+    writeFileSync,
+} from 'fs'
 import path from 'path'
 import { buildLog } from '@sprucelabs/spruce-skill-utils'
-import { gitCommit, gitPush } from './git.js'
 import { SnapshotOptions } from './snapshotter.types.js'
-import { syncFiles } from './sync.js'
 
-class Snapshotter {
-    private log = buildLog('Snapshotter')
+const ERROR_FILE_NAME = 'lastError.json'
+const log = buildLog('Snapshotter')
+const scriptPath = path.join(__dirname, 'scripts', 'runSnapshot.js')
 
-    public async snapshot(options: SnapshotOptions): Promise<boolean> {
-        const sourcePath = options.sourcePath ?? process.cwd()
-        const { mirrorPath, testResults, remote } = options
+export function snapshot(options: SnapshotOptions): void {
+    const snapshotterDir = writeOptionsFile(options)
+    spawnSnapshotProcess(snapshotterDir)
 
-        this.log.info('Starting snapshot', sourcePath, mirrorPath)
+    log.info('Snapshot queued (running in background)', options.mirrorPath)
+}
 
-        try {
-            await syncFiles(sourcePath, mirrorPath)
-            this.log.info('Files synced', mirrorPath)
+export function checkForPreviousSnapshotFailure(mirrorPath: string): void {
+    const errorPath = getErrorFilePath(mirrorPath)
 
-            const snapshotterDir = path.join(mirrorPath, '.snapshotter')
-            mkdirSync(snapshotterDir, { recursive: true })
-            writeFileSync(
-                path.join(snapshotterDir, 'testResults.json'),
-                JSON.stringify(sortTestResults(testResults), null, 2)
-            )
-            this.log.info('Test results saved', snapshotterDir)
+    if (existsSync(errorPath)) {
+        const errorData = JSON.parse(readFileSync(errorPath, 'utf-8'))
+        unlinkSync(errorPath)
 
-            const committed = await gitCommit(mirrorPath, this.log)
-
-            if (!committed) {
-                this.log.info('No changes to commit', mirrorPath)
-                return false
-            }
-
-            this.log.info('Commit created, pushing', remote.url)
-            await gitPush(mirrorPath, remote, this.log)
-            this.log.info('Push completed', remote.url)
-
-            return true
-        } catch (err) {
-            const message = err instanceof Error ? err.message : String(err)
-            this.log.error('Snapshot failed', message)
-            throw err
-        }
+        throw new Error(
+            `Previous snapshot failed: ${errorData.message}\n` +
+                `Timestamp: ${errorData.timestamp}\n` +
+                `This error was from a background snapshot that failed. ` +
+                `The snapshot has been retried - if this error persists, check your configuration.`
+        )
     }
 }
 
-export async function snapshot(options: SnapshotOptions): Promise<boolean> {
-    return new Snapshotter().snapshot(options)
+function writeOptionsFile(options: SnapshotOptions): string {
+    const snapshotterDir = path.join(options.mirrorPath, '.snapshotter')
+    mkdirSync(snapshotterDir, { recursive: true })
+
+    const optionsPath = path.join(snapshotterDir, 'pending.json')
+    writeFileSync(optionsPath, JSON.stringify(options, null, 2))
+
+    return snapshotterDir
 }
 
-function sortTestResults(
-    testResults: SnapshotOptions['testResults']
-): SnapshotOptions['testResults'] {
-    const suites = [...testResults.suites].map((suite) => ({
-        ...suite,
-        tests: [...suite.tests].sort((left, right) =>
-            left.name.localeCompare(right.name)
-        ),
-    }))
-    suites.sort((left, right) => left.path.localeCompare(right.path))
+function spawnSnapshotProcess(snapshotterDir: string): void {
+    const child = spawn('node', [scriptPath, snapshotterDir], {
+        detached: true,
+        stdio: 'ignore',
+    })
 
-    const typeErrors = testResults.typeErrors
-        ? [...testResults.typeErrors].sort((left, right) => {
-              const fileCompare = left.file.localeCompare(right.file)
-              if (fileCompare !== 0) {
-                  return fileCompare
-              }
-              const lineCompare = left.line - right.line
-              if (lineCompare !== 0) {
-                  return lineCompare
-              }
-              return left.column - right.column
-          })
-        : undefined
+    child.unref()
+}
 
-    return {
-        ...testResults,
-        suites,
-        typeErrors,
-    }
+function getErrorFilePath(mirrorPath: string): string {
+    return path.join(mirrorPath, '.snapshotter', ERROR_FILE_NAME)
 }
