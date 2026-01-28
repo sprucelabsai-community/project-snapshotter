@@ -1,5 +1,5 @@
 import ConfigManager from '../../config/ConfigManager.js'
-import { getRepoNameFromGit, toSlug } from '../../utilities/slug.js'
+import { toSlug } from '../../utilities/slug.js'
 
 const API_URL =
     process.env.REGRESSIONPROOF_API_URL ?? 'https://api.regressionproof.ai'
@@ -36,10 +36,12 @@ class InviteCreator {
 
     private resolveProjectName(projectNameArg?: string): string {
         const provided = projectNameArg ? toSlug(projectNameArg) : ''
-        const name = provided || getRepoNameFromGit()
+        const name =
+            provided ||
+            this.configManager.getLocalProjectName()
         if (!name) {
             throw new Error(
-                'Project name is required. Provide it explicitly or ensure git origin is set.'
+                'Project name is required. Provide it explicitly or ensure .regressionproof.json exists.'
             )
         }
         return name

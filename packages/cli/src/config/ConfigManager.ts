@@ -62,6 +62,23 @@ export default class ConfigManager {
         }
         fs.writeFileSync(configPath, JSON.stringify(payload, null, 2))
     }
+
+    public readLocalConfig(cwd: string = process.cwd()): LocalConfig | null {
+        const configPath = path.join(cwd, '.regressionproof.json')
+        if (!fs.existsSync(configPath)) {
+            return null
+        }
+
+        try {
+            return JSON.parse(fs.readFileSync(configPath, 'utf-8')) as LocalConfig
+        } catch {
+            return null
+        }
+    }
+
+    public getLocalProjectName(cwd: string = process.cwd()): string | null {
+        return this.readLocalConfig(cwd)?.projectName ?? null
+    }
 }
 
 export interface Credentials {
@@ -73,5 +90,13 @@ export interface ProjectConfig {
     remote: {
         url: string
         token: string
+    }
+}
+
+export interface LocalConfig {
+    version?: string
+    projectName?: string
+    remote?: {
+        url?: string
     }
 }
