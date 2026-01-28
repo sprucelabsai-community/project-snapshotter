@@ -6,6 +6,7 @@ import acceptInvite from './commands/invite/AcceptInvite.js'
 import createInvite from './commands/invite/CreateInvite.js'
 import listInvites from './commands/invite/ListInvites.js'
 import revokeInvite from './commands/invite/RevokeInvite.js'
+import Doctor from './components/Doctor.js'
 import Init from './components/Init.js'
 import DoctorOutput from './doctor/DoctorOutput.js'
 import DoctorRunner from './doctor/DoctorRunner.js'
@@ -52,7 +53,13 @@ if (command === 'init') {
             if (options.json) {
                 console.log(JSON.stringify(results, null, 2))
             } else {
-                DoctorOutput.print(results)
+                const { waitUntilExit } = render(
+                    React.createElement(Doctor, { results })
+                )
+                void waitUntilExit().then(() => {
+                    process.exit(DoctorOutput.exitCode(results))
+                })
+                return
             }
             process.exit(DoctorOutput.exitCode(results))
         })
