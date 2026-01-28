@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.8.0](https://github.com/sprucelabsai-community/regressionproof/compare/v0.7.4...v0.8.0) (2026-01-28)
+
+
+### Features
+
+* doctor ([a521a75](https://github.com/sprucelabsai-community/regressionproof/commit/a521a75))
+
+
+
+
+
 ## [0.7.4](https://github.com/sprucelabsai-community/regressionproof/compare/v0.7.3...v0.7.4) (2026-01-28)
 
 **Note:** Version bump only for package @regressionproof/cli
