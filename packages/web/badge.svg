@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="28" viewBox="0 0 180 28">
+  <defs>
+    <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#7b2fff"/>
+      <stop offset="100%" style="stop-color:#00f0ff"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="1" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="180" height="28" rx="4" fill="#0d0d12"/>
+
+  <!-- Left section -->
+  <rect width="65" height="28" rx="4" fill="#13131a"/>
+  <rect x="65" width="4" height="28" fill="#13131a"/>
+
+  <!-- Gradient accent line -->
+  <rect y="0" width="180" height="2" fill="url(#bg-gradient)" opacity="0.8"/>
+
+  <!-- Left text: AI TDD -->
+  <text x="33" y="18" font-family="'Segoe UI', Arial, sans-serif" font-size="11" font-weight="bold" fill="#00f0ff" text-anchor="middle" filter="url(#glow)">AI TDD</text>
+
+  <!-- Right text: CONTRIBUTOR -->
+  <text x="122" y="18" font-family="'Segoe UI', Arial, sans-serif" font-size="10" font-weight="600" fill="#e0e0e0" text-anchor="middle">CONTRIBUTOR</text>
+
+  <!-- Border -->
+  <rect width="180" height="28" rx="4" fill="none" stroke="url(#bg-gradient)" stroke-width="1" opacity="0.6"/>
+</svg>

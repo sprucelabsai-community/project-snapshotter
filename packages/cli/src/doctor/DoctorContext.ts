@@ -7,10 +7,16 @@ export default class DoctorContext {
         public cwd: string,
         public projectName: string | null,
         public localConfigPath: string | null,
-        public homeConfigDir: string
+        public homeConfigDir: string,
+        public apiUrl: string,
+        public fix: boolean
     ) {}
 
-    public static fromCwd(cwd: string): DoctorContext {
+    public static fromCwd(
+        cwd: string,
+        apiUrl: string,
+        fix: boolean
+    ): DoctorContext {
         const localConfigPath = path.join(cwd, '.regressionproof.json')
         const localExists = fs.existsSync(localConfigPath)
         const projectName = localExists
@@ -23,7 +29,9 @@ export default class DoctorContext {
             cwd,
             projectName,
             localExists ? localConfigPath : null,
-            homeConfigDir
+            homeConfigDir,
+            apiUrl,
+            fix
         )
     }
 

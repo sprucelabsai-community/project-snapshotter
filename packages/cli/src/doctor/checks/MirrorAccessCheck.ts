@@ -1,5 +1,6 @@
 import { execSync } from 'child_process'
 import fs from 'fs'
+import { MirrorSyncer } from '@regressionproof/snapshotter'
 import ConfigManager from '../../config/ConfigManager.js'
 import DoctorContext from '../DoctorContext.js'
 import type { DoctorResult } from '../DoctorResult.js'
@@ -64,6 +65,57 @@ export default class MirrorAccessCheck {
         }
 
         const pushResult = this.checkPushAccess(mirrorPath, authedUrl)
+        if (context.fix && pushResult.status === 'warn') {
+            if (pushResult.reason === 'non_fast_forward') {
+                const fixResult = await this.trySyncMirror(mirrorPath)
+                if (!fixResult.ok) {
+                    const message = fixResult.message ?? 'Unknown error.'
+                    if (this.isDivergedBranchError(message)) {
+                        return {
+                            name: 'Mirror directory',
+                            status: 'warn',
+                            details: [
+                                'Mirror has diverged; manual merge/rebase required.',
+                            ],
+                            fix: 'Run `git -C <mirror> pull --rebase` (or merge) to resolve divergence.',
+                        }
+                    }
+
+                    return {
+                        name: 'Mirror directory',
+                        status: 'fail',
+                        details: ['Unable to sync mirror.', message],
+                        fix: 'Run `npx regressionproof doctor --fix` again or pull the mirror manually.',
+                    }
+                }
+                const retryResult = this.checkPushAccess(mirrorPath, authedUrl)
+                if (retryResult.status === 'ok') {
+                    return {
+                        name: 'Mirror directory',
+                        status: 'ok',
+                        details: [
+                            `Mirror directory exists at ${mirrorPath}.`,
+                            'Mirror synced successfully.',
+                            'Remote access confirmed (pull/push).',
+                        ],
+                    }
+                }
+
+                return {
+                    name: 'Mirror directory',
+                    status: 'warn',
+                    details: [
+                        `Mirror directory exists at ${mirrorPath}.`,
+                        'Mirror sync completed; recheck push access.',
+                    ],
+                    fix: 'Re-run `npx regressionproof doctor` to confirm sync results.',
+                }
+            } else {
+                throw new Error(
+                    'Doctor --fix not implemented for this mirror issue.'
+                )
+            }
+        }
         if (pushResult.status === 'fail') {
             return {
                 name: 'Mirror directory',
@@ -84,7 +136,7 @@ export default class MirrorAccessCheck {
                     'Remote access confirmed (pull).',
                     pushResult.message ?? 'Unknown error.',
                 ],
-                fix: 'Run your tests to create the first snapshot.',
+                fix: 'Run `npx regressionproof doctor --fix` or pull latest changes in the mirror.',
             }
         }
 
@@ -122,9 +174,18 @@ export default class MirrorAccessCheck {
                 return {
                     status: 'warn',
                     message: 'No commits in mirror; push check skipped.',
+                    reason: 'no_commits',
                 }
             }
-            return { status: 'fail', message }
+            if (this.isNonFastForwardError(message)) {
+                return {
+                    status: 'warn',
+                    message:
+                        'Remote has newer commits; mirror is behind (non-fast-forward).',
+                    reason: 'non_fast_forward',
+                }
+            }
+            return { status: 'fail', message, reason: 'other' }
         }
     }
 
@@ -135,6 +196,36 @@ export default class MirrorAccessCheck {
             normalized.includes('does not match any') ||
             normalized.includes('no commits')
         )
+    }
+
+    private isNonFastForwardError(message: string): boolean {
+        const normalized = message.toLowerCase()
+        return (
+            normalized.includes('fetch first') ||
+            normalized.includes('non-fast-forward') ||
+            normalized.includes('failed to push some refs')
+        )
+    }
+
+    private isDivergedBranchError(message: string): boolean {
+        const normalized = message.toLowerCase()
+        return (
+            normalized.includes('diverging branches') ||
+            normalized.includes('not possible to fast-forward')
+        )
+    }
+
+    private async trySyncMirror(mirrorPath: string): Promise<AccessResult> {
+        try {
+            const syncer = new MirrorSyncer()
+            await syncer.syncBlocking(mirrorPath)
+            return { ok: true }
+        } catch (err) {
+            return {
+                ok: false,
+                message: this.getErrorMessage(err),
+            }
+        }
     }
 
     private getErrorMessage(err: unknown): string {
@@ -158,4 +249,5 @@ interface AccessResult {
 interface PushResult {
     status: 'ok' | 'warn' | 'fail'
     message?: string
+    reason?: 'no_commits' | 'non_fast_forward' | 'other'
 }

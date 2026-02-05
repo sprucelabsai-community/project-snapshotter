@@ -14,7 +14,7 @@
   "exports": {
     ".": {
       "import": {
-        "types": "./build/esm/index.d.ts",
+        "types": "./build/index.d.ts",
         "default": "./build/esm/index.js"
       },
       "require": {
@@ -25,7 +25,7 @@
   },
   "scripts": {
     "build.ci": "yarn run build.tsc && yarn run build.resolve-paths && yarn run lint",
-    "build.dev": "yarn run build.tsc --sourceMap ; yarn run resolve-paths.lint",
+    "build.dev": "yarn run build.dist",
     "build.copy-files": "mkdir -p build && rsync -avzq --exclude='*.ts' ./src/ ./build/",
     "build.resolve-paths": "resolve-path-aliases --target build --patterns '**/*.js,**/*.d.ts'",
     "build.tsc": "yarn run build.copy-files && tsc",

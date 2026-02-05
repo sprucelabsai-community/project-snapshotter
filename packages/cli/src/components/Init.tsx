@@ -3,7 +3,6 @@ import { existsSync, readFileSync } from 'node:fs'
 import type { RegressionProofClient } from '@regressionproof/client'
 import { buildRegressionProofClient } from '@regressionproof/client'
 import { Box, Text, useApp } from 'ink'
-import BigText from 'ink-big-text'
 import TextInput from 'ink-text-input'
 import React from 'react'
 import ConfigManager, { Credentials } from '../config/ConfigManager.js'
@@ -347,15 +346,8 @@ class InitComponent extends React.Component<Props, State> {
         const { name } = this.state
 
         return (
-            <Box flexDirection="column" padding={1}>
-                <BigText
-                    text="regressionproof.ai"
-                    font="tiny"
-                    colors={['magenta', 'cyan']}
-                />
-                <Text color="gray">Teaching LLMs to write better code.</Text>
-
-                <Box marginTop={1} flexDirection="column">
+            <Box flexDirection="column">
+                <Box padding={1} flexDirection="column">
                     <Text bold>Project name:</Text>
                     <Box>
                         <TextInput

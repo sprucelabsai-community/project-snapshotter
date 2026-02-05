@@ -1,17 +1,17 @@
 import { spawn } from 'child_process'
 import path from 'path'
 import { buildLog } from '@sprucelabs/spruce-skill-utils'
-import ErrorHandler from '../components/ErrorHandler.js'
-import FileSyncer from '../components/FileSyncer.js'
-import TestResultsWriter from '../components/TestResultsWriter.js'
-import { gitCommit } from '../git.js'
-import { SnapshotOptions } from '../snapshotter.types.js'
-import SnapshotterState from '../utilities/SnapshotterState.js'
-import SnapshotStrategy from './SnapshotStrategy.js'
+import ErrorHandler from '../components/ErrorHandler'
+import FileSyncer from '../components/FileSyncer'
+import TestResultsWriter from '../components/TestResultsWriter'
+import { gitCommit } from '../git'
+import { SnapshotOptions } from '../snapshotter.types'
+import SnapshotterState from '../utilities/SnapshotterState'
+import SnapshotStrategy from './SnapshotStrategy'
 
 export default class SyncStrategy implements SnapshotStrategy {
     private log = buildLog('Snapshotter')
-    private pushScriptPath = path.join(__dirname, '..', 'scripts', 'runPush.js')
+    private pushScriptPath = path.join(__dirname, '..', 'scripts', 'runPush')
 
     private constructor() {}
 

@@ -2,13 +2,13 @@ import { spawn } from 'child_process'
 import { writeFileSync } from 'fs'
 import path from 'path'
 import { buildLog } from '@sprucelabs/spruce-skill-utils'
-import { SnapshotOptions } from '../snapshotter.types.js'
-import SnapshotterState from '../utilities/SnapshotterState.js'
-import SnapshotStrategy from './SnapshotStrategy.js'
+import { SnapshotOptions } from '../snapshotter.types'
+import SnapshotterState from '../utilities/SnapshotterState'
+import SnapshotStrategy from './SnapshotStrategy'
 
 export default class AsyncStrategy implements SnapshotStrategy {
     private log = buildLog('Snapshotter')
-    private scriptPath = path.join(__dirname, '..', 'scripts', 'runSnapshot.js')
+    private scriptPath = path.join(__dirname, '..', 'scripts', 'runSnapshot')
 
     private constructor() {}
 

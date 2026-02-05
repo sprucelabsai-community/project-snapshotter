@@ -1,6 +1,6 @@
 import { mkdirSync, writeFileSync } from 'fs'
 import path from 'path'
-import { TestResults } from '../snapshotter.types.js'
+import { TestResults } from '../snapshotter.types'
 
 export default class TestResultsWriter {
     private constructor() {}

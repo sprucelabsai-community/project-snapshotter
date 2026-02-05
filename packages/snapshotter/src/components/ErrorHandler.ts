@@ -1,6 +1,6 @@
 import { existsSync, readFileSync, unlinkSync, writeFileSync } from 'fs'
 import path from 'path'
-import SnapshotterState from '../utilities/SnapshotterState.js'
+import SnapshotterState from '../utilities/SnapshotterState'
 
 export default class ErrorHandler {
     private static readonly ERROR_FILE_NAME = 'lastError.json'

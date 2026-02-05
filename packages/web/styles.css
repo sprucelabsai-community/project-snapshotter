@@ -599,6 +599,79 @@ section {
     opacity: 0.6;
 }
 
+/* Footer Badge Section */
+.footer-badge {
+    margin: 2rem 0;
+    padding: 1.5rem;
+    background: rgba(123, 47, 255, 0.08);
+    border: 1px solid rgba(123, 47, 255, 0.25);
+    border-radius: 8px;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.footer-badge-label {
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 1rem;
+}
+
+.badge-preview {
+    display: block;
+    margin: 0 auto 1rem;
+    transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.badge-preview:hover {
+    transform: scale(1.05);
+    filter: drop-shadow(0 0 10px rgba(0, 240, 255, 0.5));
+}
+
+.badge-embed {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--bg-deep);
+    border: 1px solid rgba(0, 240, 255, 0.2);
+    border-radius: 4px;
+    padding: 0.5rem;
+}
+
+.badge-code {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--neon-cyan);
+    flex: 1;
+    overflow-x: auto;
+    white-space: nowrap;
+    padding: 0.25rem 0.5rem;
+}
+
+.badge-copy-btn {
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: linear-gradient(135deg, var(--neon-purple), var(--neon-cyan));
+    color: var(--bg-deep);
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.badge-copy-btn:hover {
+    box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+    transform: translateY(-1px);
+}
+
 /* ============================================
    RESPONSIVE
    ============================================ */

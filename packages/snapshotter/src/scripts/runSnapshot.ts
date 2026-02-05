@@ -1,9 +1,9 @@
 import { existsSync, readFileSync, unlinkSync, writeFileSync } from 'fs'
 import path from 'path'
 import { buildLog } from '@sprucelabs/spruce-skill-utils'
-import ErrorHandler from '../components/ErrorHandler.js'
-import { SnapshotOptions } from '../snapshotter.types.js'
-import SyncStrategy from '../strategies/SyncStrategy.js'
+import ErrorHandler from '../components/ErrorHandler'
+import { SnapshotOptions } from '../snapshotter.types'
+import SyncStrategy from '../strategies/SyncStrategy'
 
 const LOCK_FILE_NAME = 'snapshot.lock'
 const PENDING_FILE_NAME = 'pending.json'

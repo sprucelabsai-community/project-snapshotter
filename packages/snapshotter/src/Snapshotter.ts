@@ -1,8 +1,8 @@
-import ErrorHandler from './components/ErrorHandler.js'
-import { SnapshotOptions } from './snapshotter.types.js'
-import AsyncStrategy from './strategies/AsyncStrategy.js'
-import SnapshotStrategy from './strategies/SnapshotStrategy.js'
-import SyncStrategy from './strategies/SyncStrategy.js'
+import ErrorHandler from './components/ErrorHandler'
+import { SnapshotOptions } from './snapshotter.types'
+import AsyncStrategy from './strategies/AsyncStrategy'
+import SnapshotStrategy from './strategies/SnapshotStrategy'
+import SyncStrategy from './strategies/SyncStrategy'
 
 export default class Snapshotter {
     private strategy: SnapshotStrategy
